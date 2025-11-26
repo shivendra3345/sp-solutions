@@ -1,0 +1,381 @@
+/* HeroBanner.module.scss
+   - Full-bleed background image (runs end-to-end)
+   - Semi-opaque dark overlay
+   - Constrained inner content container (heroContent) above overlay
+   - All other UI (tiles, cards) preserved below
+*/
+
+:root {
+  /* fallback link colors if needed */
+  --link: #03787c;
+  --linkHovered: #014446;
+}
+
+/* outer web part card */
+.banner {
+  padding: 18px;
+  padding-top: 0px;
+  //background: #f4f7fb;
+  border-radius: 0px;
+  box-shadow: 0 1px 6px rgba(16,24,40,0.06);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+}
+
+/* HERO SECTION
+   - full-bleed background image that runs end-to-end of the web part area
+   - use CSS variable --hero-bg to set the image (inline style or CSS)
+*/
+.heroSection {
+  position: relative;
+  width: calc(100% + 36px); /* extends past banner padding if you use banner padding */
+  margin-left: -18px;
+  margin-right: -18px;
+  border-radius: 0px;
+  overflow: hidden;
+  background-color: #0f6ab4; /* fallback color */
+  background-image: var(--hero-bg, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.28); /* dark overlay for contrast */
+  z-index: 1;
+}
+
+/* inner content sits above overlay and is constrained */
+.heroContent {
+  position: relative;
+  z-index: 2;
+  padding: 36px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: center;
+  color: #ffffff; /* text on hero should be light for contrast */
+  width: 600px;
+  background-color: #1b4429; /* semi-opaque background for readability */
+}
+
+/* center block: welcome + search stacked and centered */
+/* ensure centerBlock keeps items centered */
+.centerBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+/* if you want extra spacing above/below the persona */
+.personaWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+
+/* Search box sizing; override Fluent UI background for readability */
+.search {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* If you want the SearchBox to appear as a white input on top of the dark overlay,
+   you can target Fluent UI classes or pass styles prop. A simple selector below helps
+   in many setups; adjust if your Fluent UI version uses different class names. */
+.search :global(.ms-SearchBox) {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 6px;
+  padding: 4px;
+}
+
+/* Quick links (InfoTiles) centered under the centerBlock */
+.quickLinks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+/* InfoTile visuals */
+.infoTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 88px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.infoTile:hover {
+  transform: translateY(-4px);
+}
+
+.tileCircle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+}
+
+.tileIcon {
+  font-size: 20px;
+  color: #fff;
+}
+
+.tileLabel {
+  font-size: 12px;
+  color: #fff;
+  max-width: 88px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* content area below hero */
+.content {
+  margin-top: 20px;
+}
+
+/* featured list and cards */
+.featuredList {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.featuredCard {
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 8px;
+  width: 320px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.cardHeader { margin-bottom: 6px; }
+
+.cardTitle {
+  margin: 0;
+  font-size: 16px;
+  color: #0b4f7a;
+  font-weight: 600;
+}
+
+.cardBody { margin-bottom: 8px; }
+
+.cardExcerpt {
+  margin: 0;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.meta { color: #666; font-size: 12px; }
+
+/* side panels */
+.sidePanels {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.panel {
+  background: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  width: 320px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.staffList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.calendar { margin-top: 8px; }
+
+.calendarMonth {
+  font-weight: 600;
+  color: #0f6ab4;
+  margin-bottom: 8px;
+}
+
+.events {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #444;
+  font-size: 13px;
+}
+
+.events li {
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.04);
+}
+
+/* metrics */
+.metrics {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.metric {
+  background: linear-gradient(180deg,#fff,#f7fbff);
+  padding: 12px;
+  border-radius: 8px;
+  min-width: 160px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(16,24,40,0.04);
+  font-size: 14px;
+  color: #0b4f7a;
+}
+
+.metric strong {
+  display: block;
+  font-size: 18px;
+  color: #0f6ab4;
+  margin-top: 6px;
+}
+
+/* links helper */
+.links a {
+  text-decoration: none;
+  color: var(--link);
+}
+.links a:hover {
+  text-decoration: underline;
+  color: var(--linkHovered);
+}
+
+/* responsive */
+@media (max-width: 980px) {
+  .featuredCard,
+  .panel {
+    width: 100%;
+  }
+  .metrics {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 720px) {
+  .heroContent { padding: 20px 12px; }
+  .search { max-width: 100%; }
+  .infoTile { width: 72px; }
+  .tileLabel { font-size: 11px; }
+}
+.persona :global(.ms-Persona-primaryText) {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 600;
+}
+.persona :global(.ms-Persona-image) {
+  display: none;
+}
+.persona :global(.ms-Persona-secondaryText) {
+  display: none;
+}
+/* Tabs + section header (placed before featured list) */
+.tabsAndHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 18px auto 8px;
+  padding: 0 20px;
+}
+
+.tabsContainer {
+  flex: 1 1 auto;
+  min-width: 240px;
+}
+
+/* Target Fluent UI Pivot classes */
+.tabsContainer :global(.ms-Pivot) {
+  background: transparent;
+  box-shadow: none;
+}
+
+.tabsContainer :global(.ms-Pivot-link) {
+  color: #0b4f7a;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-right: 6px;
+  font-weight: 600;
+}
+
+.tabsContainer :global(.ms-Pivot-link:hover) {
+  background: rgba(15,106,180,0.06);
+}
+
+.tabsContainer :global(.ms-Pivot-link.is-selected),
+.tabsContainer :global(.ms-Pivot-link[aria-selected="true"]) {
+  background: #0f6ab4;
+  color: #fff;
+  box-shadow: none;
+}
+
+/* Section header to the right of tabs */
+.sectionHeader {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #0b4f7a;
+  font-weight: 600;
+}
+
+/* Placeholder when no items for a tab */
+.noItems {
+  padding: 18px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Responsive: stack tabs above header on small screens */
+@media (max-width: 720px) {
+  .tabsAndHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin: 12px auto;
+  }
+  .sectionHeader {
+    text-align: left;
+  }
+}

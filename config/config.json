@@ -1,0 +1,27 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "banner-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/banner/BannerWebPart.js",
+          "manifest": "./src/webparts/banner/BannerWebPart.manifest.json"
+        }
+      ]
+    },
+    "top-nav-footer-application-customizer": {
+      "components": [
+        {
+          "entrypoint": "./lib/extensions/topNavFooter/TopNavFooterApplicationCustomizer.js",
+          "manifest": "./src/extensions/topNavFooter/TopNavFooterApplicationCustomizer.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "BannerWebPartStrings": "lib/webparts/banner/loc/{locale}.js",
+    "TopNavFooterApplicationCustomizerStrings": "lib/extensions/topNavFooter/loc/{locale}.js"
+  }
+}

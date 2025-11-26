@@ -1,0 +1,123 @@
+/* TopNavFooter.module.scss */
+
+/* Top nav (component and inserted variant) */
+.topNav {
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.topNavInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand {
+  font-weight: 700;
+  color: #0f6ab4;
+  font-size: 18px;
+  flex: 0 0 auto;
+}
+
+/* nav links */
+.nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.navLink {
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.navLink:hover {
+  background: rgba(15,106,180,0.06);
+  color: #0f6ab4;
+}
+
+/* Inserted container (when we inject after search) */
+.spfx-topnav-insert {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  z-index: 10000;
+}
+
+/* ensure inserted nav inner matches layout */
+.spfx-topnav-insert .topNavInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: transparent;
+}
+
+/* Hide original header (class added dynamically) */
+.spfx-hidden-original-header {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Footer injected (appended to body) */
+.injectedFooterWrapper {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  background: transparent;
+}
+
+.injectedFooterInner {
+  width: 100%;
+  background: linear-gradient(180deg, #0f6ab4, #0b5f9a);
+  color: #fff;
+  padding: 12px 20px;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.12);
+  display: flex;
+  justify-content: center;
+}
+
+.injectedFooterInner .footer-content {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+}
+
+/* small screens */
+@media (max-width: 720px) {
+  .topNavInner { padding: 8px 12px; }
+  .navLink { font-size: 13px; padding: 6px; }
+  .injectedFooterInner { padding: 10px 12px; }
+  .injectedFooterInner .footer-content { flex-direction: column; gap: 8px; align-items: center; text-align: center; }
+}
+
+/* Optional: ensure inserted nav doesn't create extra top spacing after hiding header */
+.spfx-hidden-original-header + * {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}

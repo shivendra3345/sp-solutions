@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+    <ClientSideComponentInstance
+        Title="TopNavFooter"
+        Location="ClientSideExtension.ApplicationCustomizer"
+        ComponentId="e5d76c9f-1527-46f5-815d-7e19ad7e28cc"
+        Properties="{&quot;testMessage&quot;:&quot;Test message&quot;}">
+    </ClientSideComponentInstance>
+</Elements>
