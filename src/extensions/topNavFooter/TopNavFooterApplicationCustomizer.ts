@@ -27,50 +27,50 @@ export default class TopNavFooterApplicationCustomizer
   private _insertionContainerId = 'spfx-topnav-insert-after-search';
   private _observer: MutationObserver | null = null;
 
- @override
-public onInit(): Promise<void> {
-  Log.info(LOG_SOURCE, `Initialized TopNavFooterApplicationCustomizer`);
+  @override
+  public onInit(): Promise<void> {
+    Log.info(LOG_SOURCE, `Initialized TopNavFooterApplicationCustomizer`);
 
-  // Inject critical hide style immediately to avoid header flash
-  this._injectHideStyleEarly();
+    // Inject critical hide style immediately to avoid header flash
+    this._injectHideStyleEarly();
 
-  // Render top placeholder (fallback)
-  this.context.placeholderProvider.changedEvent.add(this, this._renderPlaceholders.bind(this));
-  this._renderPlaceholders();
+    // Render top placeholder (fallback)
+    this.context.placeholderProvider.changedEvent.add(this, this._renderPlaceholders.bind(this));
+    this._renderPlaceholders();
 
-  // Create footer container appended to document.body
-  this._createFooterContainerAndRender();
+    // Create footer container appended to document.body
+    this._createFooterContainerAndRender();
 
-  // Create and insert top nav after the page search box (override header visually)
-  this._createAndInsertTopNavAfterSearch();
+    // Create and insert top nav after the page search box (override header visually)
+    this._createAndInsertTopNavAfterSearch();
 
-  return Promise.resolve();
-}
-/**
- * Inject a critical CSS rule as early as possible to hide the original header
- * before it renders. This prevents the header from appearing briefly.
- */
-private _hideStyleId = 'spfx-hide-header-critical-style';
-
-private _injectHideStyleEarly(): void {
-  // If already injected, skip
-  if (document.getElementById(this._hideStyleId)) {
-    return;
+    return Promise.resolve();
   }
+  /**
+   * Inject a critical CSS rule as early as possible to hide the original header
+   * before it renders. This prevents the header from appearing briefly.
+   */
+  private _hideStyleId = 'spfx-hide-header-critical-style';
 
-  // Narrow, explicit selectors for modern and classic headers
-  const selectors = [
-    '#spSiteHeader',
-    '.spSiteHeader',
-    '[data-automation-id="SiteHeader"]',
-    '#SuiteNavPlaceHolder',
-    '.od-TopBar',
-    '.ms-compositeHeader',
-    '.SPCommandBar'
-  ];
+  private _injectHideStyleEarly(): void {
+    // If already injected, skip
+    if (document.getElementById(this._hideStyleId)) {
+      return;
+    }
 
-  // Build a single rule string with !important and no transitions to avoid flicker
-  const rule = `${selectors.join(', ')} { 
+    // Narrow, explicit selectors for modern and classic headers
+    const selectors = [
+      '#spSiteHeader',
+      '.spSiteHeader',
+      '[data-automation-id="SiteHeader"]',
+      '#SuiteNavPlaceHolder',
+      '.od-TopBar',
+      '.ms-compositeHeader',
+      '.SPCommandBar'
+    ];
+
+    // Build a single rule string with !important and no transitions to avoid flicker
+    const rule = `${selectors.join(', ')} { 
     display: none !important; 
     visibility: hidden !important; 
     height: 0 !important; 
@@ -81,35 +81,35 @@ private _injectHideStyleEarly(): void {
     pointer-events: none !important; 
   }`;
 
-  const style = document.createElement('style');
-  style.id = this._hideStyleId;
-  style.appendChild(document.createTextNode(rule));
+    const style = document.createElement('style');
+    style.id = this._hideStyleId;
+    style.appendChild(document.createTextNode(rule));
 
-  // Insert as early as possible
-  const head = document.head || document.getElementsByTagName('head')[0];
-  if (head) {
-    head.insertBefore(style, head.firstChild);
-  } else {
-    document.documentElement.appendChild(style);
+    // Insert as early as possible
+    const head = document.head || document.getElementsByTagName('head')[0];
+    if (head) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      document.documentElement.appendChild(style);
+    }
+
+    // debug
+    // eslint-disable-next-line no-console
+    console.info('TopNavFooter: injected critical hide style to prevent header flash');
   }
 
-  // debug
-  // eslint-disable-next-line no-console
-  console.info('TopNavFooter: injected critical hide style to prevent header flash');
-}
-
-/**
- * Remove the critical hide style once our nav is inserted and visible.
- * Keeps the DOM clean and allows any other header logic to run if needed.
- */
-// private _removeHideStyleEarly(): void {
-//   const style = document.getElementById(this._hideStyleId);
-//   if (style) {
-//     style.remove();
-//     // eslint-disable-next-line no-console
-//     console.info('TopNavFooter: removed critical hide style');
-//   }
-// }
+  /**
+   * Remove the critical hide style once our nav is inserted and visible.
+   * Keeps the DOM clean and allows any other header logic to run if needed.
+   */
+  // private _removeHideStyleEarly(): void {
+  //   const style = document.getElementById(this._hideStyleId);
+  //   if (style) {
+  //     style.remove();
+  //     // eslint-disable-next-line no-console
+  //     console.info('TopNavFooter: removed critical hide style');
+  //   }
+  // }
   private _renderPlaceholders(): void {
     if (!this._topPlaceholder) {
       this._topPlaceholder = this.context.placeholderProvider.tryCreateContent(
@@ -138,11 +138,11 @@ private _injectHideStyleEarly(): void {
       document.body.appendChild(container);
     }
 
- //   const footerProps = {
- //     html: this.properties.footerHtml || ''
- //   };
+    //   const footerProps = {
+    //     html: this.properties.footerHtml || ''
+    //   };
 
- //   ReactDOM.render(React.createElement(FooterInjector, footerProps), container);
+    //   ReactDOM.render(React.createElement(FooterInjector, footerProps), container);
   }
 
   private _createAndInsertTopNavAfterSearch(): void {
@@ -158,18 +158,18 @@ private _injectHideStyleEarly(): void {
    * Avoid hiding ControlZone or other page content.
    */
   private _hideExistingHeader(): void {
-   const selectors = [
-    '#spSiteHeader',            // modern site header id
-    '.spSiteHeader',            // modern site header class fallback
-    '[data-automation-id="SiteHeader"]', // some tenants
-    '#SuiteNavPlaceHolder',     // suite nav container
-    '.od-TopBar',               // older top bar
-    '.ms-compositeHeader',      // composite header
-    '.SPCommandBar' ,            // command bar (if present)
-    '.ms-HubNav'     ,       // hub nav (if present)
-    '.ms-HorizontalNav'
+    const selectors = [
+      '#spSiteHeader',            // modern site header id
+      '.spSiteHeader',            // modern site header class fallback
+      '[data-automation-id="SiteHeader"]', // some tenants
+      '#SuiteNavPlaceHolder',     // suite nav container
+      '.od-TopBar',               // older top bar
+      '.ms-compositeHeader',      // composite header
+      '.SPCommandBar',            // command bar (if present)
+      '.ms-HubNav',       // hub nav (if present)
+      '.ms-HorizontalNav'
 
-  ];
+    ];
 
     const hidden: string[] = [];
     selectors.forEach(sel => {
