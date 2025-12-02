@@ -1,311 +1,309 @@
 import * as React from 'react';
-import { useEffect, useState, useRef } from 'react';
+import { ApplicationCustomizerContext } from '@microsoft/sp-application-base';
 import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 import styles from './TopNav.module.scss';
 
-export interface INavNode {
-  Id: string;
+export interface ITopNavComponentProps {
+  context: ApplicationCustomizerContext;
+  hubRootWebUrl?: string;
+  maxDepth?: number;
+  cacheTtlMinutes?: number;
+}
+
+interface INavNode {
   Title: string;
   Url: string;
-  IsExternal?: boolean;
-  Children?: INavNode[];
+  Children?: { results?: INavNode[] } | INavNode[];
+  // other fields omitted
 }
 
-export interface ITopNavProps {
-  context: any; // ExtensionContext / WebPartContext
-  hubRootWebUrl?: string; // optional: will be hardcoded below per request
-  maxDepth?: number; // how many levels to render (default 2)
-  cacheTtlSeconds?: number; // cache TTL in seconds (default 300)
+export interface IMenuItem {
+  title: string;
+  url: string;
+  children?: IMenuItem[];
 }
 
-const DEFAULT_CACHE_TTL = 300;
+const HARDCODED_HUB_URL = 'https://lcor1.sharepoint.com/sites/communication/';
 
-const TopNav: React.FC<ITopNavProps> = ({
-  context,
-  hubRootWebUrl,
-  maxDepth = 2,
-  cacheTtlSeconds = DEFAULT_CACHE_TTL
-}) => {
-  const [nav, setNav] = useState<INavNode[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
-  const mountedRef = useRef(true);
+const TopNavComponent: React.FC<ITopNavComponentProps> = (props) => {
+  const [menu, setMenu] = React.useState<IMenuItem[] | null>(null);
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  // Keep a ref to the currently opened dropdown (for keyboard/escape handling)
-  const openDropdownRef = useRef<HTMLLIElement | null>(null);
+  React.useEffect(() => {
+    const resolvedHubSiteUrl = (props.hubRootWebUrl && props.hubRootWebUrl.trim().length)
+      ? props.hubRootWebUrl.replace(/\/$/, '')
+      : (HARDCODED_HUB_URL && HARDCODED_HUB_URL.toString().trim().length)
+        ? HARDCODED_HUB_URL.replace(/\/$/, '')
+        : (props.context && props.context.pageContext && props.context.pageContext.web && props.context.pageContext.web.absoluteUrl)
+          ? props.context.pageContext.web.absoluteUrl.replace(/\/$/, '')
+          : '';
 
-  useEffect(() => {
-    mountedRef.current = true;
-    setLoading(true);
-    setError(null);
-
-    // Hardcoded hub URL as requested
-    // eslint-disable-next-line no-param-reassign
-    hubRootWebUrl = 'https://lcor1.sharepoint.com/sites/communication/';
-
-    const baseUrl = (hubRootWebUrl && hubRootWebUrl.toString().trim().length)
-      ? hubRootWebUrl.replace(/\/$/, '')
-      : (context && context.pageContext && context.pageContext.web && context.pageContext.web.absoluteUrl)
-        ? context.pageContext.web.absoluteUrl.replace(/\/$/, '')
-        : '';
-
-    if (!baseUrl) {
-      setError('Unable to determine site URL for navigation.');
+    if (!resolvedHubSiteUrl) {
+      setError('Hub site URL not available');
       setLoading(false);
-      // eslint-disable-next-line no-console
-      console.error('TopNav: baseUrl not found (hubRootWebUrl or context.pageContext.web.absoluteUrl)');
       return;
     }
 
-    const endpoint = `${baseUrl}/_api/web/Navigation/TopNavigationBar?$expand=Children`;
-    const cacheKey = `spfx_topnav_${baseUrl}`;
+    const maxDepth = props.maxDepth && Number.isInteger(props.maxDepth) ? props.maxDepth : 3;
+    const expand = buildExpandString(maxDepth);
 
-    // Try session cache first
-    try {
-      const raw = sessionStorage.getItem(cacheKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.expires && parsed.data && parsed.expires > Date.now()) {
-          setNav(parsed.data);
-          setLoading(false);
-          // background refresh
-          fetchNav(endpoint, cacheKey, false);
-          return;
-        } else {
-          sessionStorage.removeItem(cacheKey);
-        }
-      }
-    } catch (e) {
-      // ignore storage errors
-      // eslint-disable-next-line no-console
-      console.warn('TopNav: sessionStorage read failed', e);
-    }
+    // IMPORTANT: do NOT encode the expand string for SharePoint REST
+    const endpoint = `${resolvedHubSiteUrl}/_api/web/Navigation/TopNavigationBar?$expand=${expand}`;
+    const cacheKey = `spfx_topnav_${resolvedHubSiteUrl}`;
+    const cacheTtlMinutes = props.cacheTtlMinutes && Number.isInteger(props.cacheTtlMinutes) ? props.cacheTtlMinutes : 10;
 
-    // No valid cache — fetch and set
-    fetchNav(endpoint, cacheKey, true);
-
-    return () => {
-      mountedRef.current = false;
-      // close any open dropdown on unmount
-      openDropdownRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [context, hubRootWebUrl, maxDepth, cacheTtlSeconds]);
-
-  function fetchNav(endpoint: string, cacheKey: string, setUi: boolean) {
-    if (!context || !context.spHttpClient) {
-      if (mountedRef.current) {
-        setError('SPHttpClient not available on context.');
-        setLoading(false);
-      }
-      // eslint-disable-next-line no-console
-      console.error('TopNav: context.spHttpClient missing');
+    const cached = readCache(cacheKey);
+    if (cached) {
+      setMenu(cached);
+      setLoading(false);
+      // background refresh
+      fetchNav(endpoint, cacheKey, cacheTtlMinutes, props.context.spHttpClient, resolvedHubSiteUrl)
+        .then(mapped => {
+          // update cache and UI if changed
+          setMenu(mapped);
+        })
+        .catch(e => console.warn('TopNav background refresh failed', e));
       return;
     }
 
-    // eslint-disable-next-line no-console
-    console.info('TopNav: fetching navigation from', endpoint);
-
-    context.spHttpClient.get(endpoint, SPHttpClient.configurations.v1)
-      .then((res: SPHttpClientResponse) => {
-        if (!res.ok) {
-          throw new Error(`Failed to load navigation: ${res.status} ${res.statusText}`);
-        }
-        return res.json();
-      })
-      .then((data: any) => {
-        if (!mountedRef.current) return;
-        const nodes: INavNode[] = (data && data.value ? data.value : []).map((n: any) => mapNode(n));
-        if (setUi) {
-          setNav(nodes);
-          setLoading(false);
-        }
-        try {
-          const payload = { expires: Date.now() + (cacheTtlSeconds * 1000), data: nodes };
-          sessionStorage.setItem(cacheKey, JSON.stringify(payload));
-        } catch (e) {
-          // ignore storage errors
-        }
-      })
-      .catch((err: any) => {
-        if (!mountedRef.current) return;
-        setError(err && err.message ? err.message : String(err));
+    fetchNav(endpoint, cacheKey, cacheTtlMinutes, props.context.spHttpClient, resolvedHubSiteUrl)
+      .then(mapped => {
+        setMenu(mapped);
         setLoading(false);
-        // eslint-disable-next-line no-console
+      })
+      .catch(err => {
         console.error('TopNav fetch error', err);
+        setError('Failed to load navigation');
+        setLoading(false);
       });
+
+  // Re-run if hubRootWebUrl, maxDepth or cacheTtlMinutes change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.hubRootWebUrl, props.maxDepth, props.cacheTtlMinutes]);
+
+  if (loading) {
+    return <div className={styles.topNavLoading || 'topNavLoading'}>Loading navigation…</div>;
+  }
+  if (error) {
+    return <div className={styles.topNavError || 'topNavError'}>{error}</div>;
+  }
+  if (!menu || !menu.length) {
+    return null;
   }
 
-  function mapNode(n: any): INavNode {
-    const id = n && (n.Id || n.Id === 0) ? String(n.Id) : Math.random().toString(36).substr(2, 9);
-    const title = (n && (n.Title || n.Title === '')) ? String(n.Title) : '';
-    let url = '#';
-
-    if (n) {
-      if (typeof n.Url === 'string' && n.Url.trim().length) url = n.Url;
-      else if (n.Url && typeof n.Url === 'object') url = (n.Url.Url && typeof n.Url.Url === 'string') ? n.Url.Url : (n.Url && n.Url.toString ? String(n.Url) : '#');
-      else if (n.Url && n.Url.Url) url = n.Url.Url;
+  // Determine hub host for link validation (used by isValidHref)
+  const hubHost = (() => {
+    try {
+      const u = new URL((props.hubRootWebUrl && props.hubRootWebUrl.trim().length) ? props.hubRootWebUrl : HARDCODED_HUB_URL);
+      return u.host.toLowerCase();
+    } catch {
+      return '';
     }
-
-    const isExternal = !!(url && /^https?:\/\//i.test(url) && url.indexOf(window.location.hostname) === -1);
-
-    const node: INavNode = { Id: id, Title: title, Url: url || '#', IsExternal: isExternal, Children: [] };
-
-    const childrenRaw = n && n.Children ? n.Children : null;
-    const childrenArray = Array.isArray(childrenRaw) ? childrenRaw : (childrenRaw && childrenRaw.results ? childrenRaw.results : []);
-    if (childrenArray && childrenArray.length) node.Children = childrenArray.map((c: any) => mapNode(c));
-
-    return node;
-  }
-
-  // keyboard handlers for accessibility and navigation
-  const onKeyDownItem = (e: React.KeyboardEvent, li: HTMLLIElement | null) => {
-    if (!li) return;
-    const key = e.key;
-    const hasChildren = !!li.querySelector(`.${styles.dropdown}`);
-    if (key === 'Enter' || key === ' ') {
-      if (hasChildren) {
-        e.preventDefault();
-        const expanded = li.getAttribute('data-expanded') === 'true';
-        li.setAttribute('data-expanded', (!expanded).toString());
-        if (!expanded) {
-          li.classList.add(styles.topNavItemHasChildren);
-          openDropdownRef.current = li;
-        } else {
-          li.classList.remove(styles.topNavItemHasChildren);
-          openDropdownRef.current = null;
-        }
-      }
-    } else if (key === 'Escape') {
-      if (hasChildren) {
-        li.setAttribute('data-expanded', 'false');
-        li.classList.remove(styles.topNavItemHasChildren);
-        openDropdownRef.current = null;
-      }
-    } else if (key === 'ArrowDown') {
-      if (hasChildren) {
-        e.preventDefault();
-        const firstChildLink = li.querySelector(`.${styles.dropdown} a`) as HTMLElement | null;
-        if (firstChildLink) firstChildLink.focus();
-      }
-    } else if (key === 'ArrowRight') {
-      const next = li.nextElementSibling as HTMLElement | null;
-      if (next) {
-        const link = next.querySelector(`.${styles.topNavLink}`) as HTMLElement | null;
-        if (link) link.focus();
-      }
-    } else if (key === 'ArrowLeft') {
-      const prev = li.previousElementSibling as HTMLElement | null;
-      if (prev) {
-        const link = prev.querySelector(`.${styles.topNavLink}`) as HTMLElement | null;
-        if (link) link.focus();
-      }
-    }
-  };
-
-  // close any open dropdown when clicking outside
-  useEffect(() => {
-    const onDocClick = (ev: MouseEvent) => {
-      const target = ev.target as HTMLElement | null;
-      if (!target) return;
-      const open = openDropdownRef.current;
-      if (open && !open.contains(target)) {
-        open.setAttribute('data-expanded', 'false');
-        open.classList.remove(styles.topNavItemHasChildren);
-        openDropdownRef.current = null;
-      }
-    };
-
-    document.addEventListener('click', onDocClick, true);
-    return () => document.removeEventListener('click', onDocClick, true);
-  }, []);
-
-  const toggleMobile = () => setMobileOpen(v => !v);
-
-  const renderMenu = (items: INavNode[], depth = 1) => {
-    if (!items || !items.length) return null;
-    return (
-      <ul
-        className={styles.topNavList}
-        role={depth === 1 ? 'menubar' : 'menu'}
-        aria-label={depth === 1 ? 'Top navigation' : 'Sub menu'}
-      >
-        {items.map(item => {
-          let liRef: HTMLLIElement | null = null;
-          const setLiRef = (el: HTMLLIElement | null) => { liRef = el; };
-
-          return (
-            <li
-              key={item.Id}
-              className={styles.topNavItem}
-              role="none"
-              ref={setLiRef}
-              tabIndex={0}
-              onKeyDown={(e) => onKeyDownItem(e, liRef)}
-              data-expanded="false"
-            >
-              <a
-                href={item.Url || '#'}
-                className={styles.topNavLink}
-                role="menuitem"
-                target={item.IsExternal ? '_blank' : undefined}
-                rel={item.IsExternal ? 'noopener noreferrer' : undefined}
-              >
-                {item.Title}
-              </a>
-
-              {item.Children && item.Children.length > 0 && depth < maxDepth && (
-                <div className={styles.dropdown} role="presentation" aria-hidden="true">
-                  {renderMenu(item.Children, depth + 1)}
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    );
-  };
+  })();
 
   return (
-    <nav className={styles.topNav} aria-label="Site top navigation">
-      <div className={styles.topNavInner}>
-        {/* <div className={styles.brand} aria-hidden="true">THE HUB</div> */}
-
-        <div className={styles.menuWrap}>
-          <button
-            className={styles.mobileToggle}
-            aria-expanded={mobileOpen}
-            aria-controls="spfx-mobile-topnav"
-            onClick={toggleMobile}
-            type="button"
-          >
-            <span className={styles.srOnly}>Toggle navigation</span>
-            ☰
-          </button>
-
-          {loading && <div className={styles.loading}>Loading navigation…</div>}
-          {error && <div className={styles.error}>Navigation error: {error}</div>}
-
-          {!loading && !error && (
-            <>
-              <div className={styles.desktopMenu} aria-hidden={mobileOpen ? 'true' : 'false'}>
-                {renderMenu(nav)}
-              </div>
-
-              <div
-                id="spfx-mobile-topnav"
-                className={`${styles.mobileMenu} ${mobileOpen ? styles.mobileMenuOpen : ''}`}
-                aria-hidden={!mobileOpen}
-              >
-                {renderMenu(nav)}
-              </div>
-            </>
-          )}
+    <nav className={styles.topNav || 'topNav'}>
+      <div className={styles.topNavInner || 'topNavInner'}>
+        {/* brand removed per request */}
+        <div className={styles.menuWrap || 'menuWrap'}>
+          <ul className={styles.topNavList || 'topNavList'}>
+            {menu.map((item, idx) => <TopLevelMenuItem key={idx} item={item} hubHost={hubHost} />)}
+          </ul>
         </div>
       </div>
     </nav>
   );
 };
 
-export default TopNav;
+const TopLevelMenuItem: React.FC<{ item: IMenuItem; hubHost: string }> = ({ item, hubHost }) => {
+  const hasChildren = !!(item.children && item.children.length);
+  const validHref = isValidHref(item.url, hubHost);
+
+  return (
+    <li className={`${styles.topNavItem || 'topNavItem'} ${hasChildren ? 'has-children' : ''}`}>
+      {validHref ? (
+        <a className={styles.topNavLink || 'topNavLink'} href={item.url || '#'} data-nav-url={item.url || ''}>
+          {item.title}
+        </a>
+      ) : (
+        <span className={styles.topNavLink || 'topNavLink'} aria-disabled="true" data-nav-url={item.url || ''}>
+          {item.title}
+        </span>
+      )}
+
+      {hasChildren && (
+        <div className={styles.dropdown || 'dropdown'} role="menu" aria-label={`${item.title} submenu`}>
+          <ul className={styles.topNavList || 'topNavList'}>
+            {item.children!.map((child, idx) => (
+              <NestedMenuItem key={idx} item={child} hubHost={hubHost} />
+            ))}
+          </ul>
+        </div>
+      )}
+    </li>
+  );
+};
+
+const NestedMenuItem: React.FC<{ item: IMenuItem; hubHost: string }> = ({ item, hubHost }) => {
+  const hasChildren = !!(item.children && item.children.length);
+  const validHref = isValidHref(item.url, hubHost);
+
+  return (
+    <li className={`${styles.topNavItem || 'topNavItem'} ${hasChildren ? 'has-children' : ''}`}>
+      {validHref ? (
+        <a className={styles.topNavLink || 'topNavLink'} href={item.url || '#'} data-nav-url={item.url || ''}>
+          {item.title}
+        </a>
+      ) : (
+        <span className={styles.topNavLink || 'topNavLink'} aria-disabled="true" data-nav-url={item.url || ''}>
+          {item.title}
+        </span>
+      )}
+
+      {hasChildren && (
+        <ul className={styles.subMenu || 'subMenu'}>
+          {item.children!.map((child, idx) => (
+            <NestedMenuItem key={idx} item={child} hubHost={hubHost} />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+};
+
+/* ---------------- Helpers ---------------- */
+
+function buildExpandString(maxDepth: number): string {
+  const parts: string[] = [];
+  for (let i = 1; i <= maxDepth; i++) {
+    parts.push(Array(i).fill('Children').join('/'));
+  }
+  return parts.join(',');
+}
+
+function readCache(cacheKey: string): IMenuItem[] | null {
+  try {
+    const raw = sessionStorage.getItem(cacheKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.expires && parsed.data && parsed.expires > Date.now()) {
+      return parsed.data as IMenuItem[];
+    }
+    sessionStorage.removeItem(cacheKey);
+    return null;
+  } catch (e) {
+    console.warn('TopNav: sessionStorage read failed', e);
+    return null;
+  }
+}
+
+function writeCache(cacheKey: string, data: IMenuItem[], cacheTtlMinutes: number): void {
+  try {
+    const ttl = Math.max(1, cacheTtlMinutes) * 60 * 1000;
+    const payload = { expires: Date.now() + ttl, data };
+    sessionStorage.setItem(cacheKey, JSON.stringify(payload));
+  } catch (e) {
+    console.warn('TopNav: sessionStorage write failed', e);
+  }
+}
+
+function normalizeUrl(rawUrl: string, hubSiteUrl: string): string {
+  if (!rawUrl) return hubSiteUrl;
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
+  const hub = hubSiteUrl.replace(/\/$/, '');
+  rawUrl = rawUrl.replace(/^~sitecollection/i, hub);
+  rawUrl = rawUrl.replace(/^~site/i, hub);
+  if (rawUrl.indexOf('/') === 0) {
+    try {
+      const u = new URL(hub);
+      return `${u.protocol}//${u.host}${rawUrl}`;
+    } catch (e) {
+      return `${hub}${rawUrl}`;
+    }
+  }
+  return `${hub}/${rawUrl.replace(/^\//, '')}`;
+}
+
+/**
+ * Robust mapper: accepts Children as either { results: INavNode[] } or INavNode[].
+ */
+function mapNavNodeToMenuItem(node: INavNode, hubSiteUrl: string): IMenuItem {
+  // children may be node.Children.results OR node.Children (array)
+  let childrenNodes: INavNode[] = [];
+  if (!node.Children) {
+    childrenNodes = [];
+  } else if (Array.isArray(node.Children)) {
+    childrenNodes = node.Children as INavNode[];
+  } else if ((node.Children as any).results && Array.isArray((node.Children as any).results)) {
+    childrenNodes = (node.Children as any).results as INavNode[];
+  } else {
+    // fallback: try to treat as array-like
+    try {
+      childrenNodes = (Object.values(node.Children) as unknown) as INavNode[];
+    } catch {
+      childrenNodes = [];
+    }
+  }
+
+  const children = childrenNodes.map(child => mapNavNodeToMenuItem(child, hubSiteUrl));
+  const url = normalizeUrl((node as any).Url || '', hubSiteUrl);
+  return {
+    title: (node as any).Title || '',
+    url,
+    children: children.length ? children : undefined
+  };
+}
+
+async function fetchNav(requestUrl: string, cacheKeyLocal: string, cacheTtlMinutes: number, spHttpClient: SPHttpClient, hubSiteUrl: string): Promise<IMenuItem[]> {
+  const resp: SPHttpClientResponse = await spHttpClient.get(requestUrl, SPHttpClient.configurations.v1);
+  if (!resp.ok) {
+    throw new Error(`Failed to load navigation from ${requestUrl}: ${resp.status} ${resp.statusText}`);
+  }
+  const json = await resp.json();
+
+  // Debug: inspect raw response to confirm nested Children shape
+  console.debug('TopNavigationBar raw response', requestUrl, json);
+
+  const nodes: INavNode[] = json.value || [];
+  const mapped = nodes.map(n => mapNavNodeToMenuItem(n, hubSiteUrl));
+
+  // Debug: inspect mapped structure
+  console.debug('TopNav mapped menu', mapped);
+
+  writeCache(cacheKeyLocal, mapped, cacheTtlMinutes);
+  return mapped;
+}
+
+/**
+ * Determine whether to render an <a href="..."> for the given URL.
+ * Rules:
+ * - URL must be an absolute http/https URL
+ * - Exclude known placeholder hosts like 'linkless' or obviously invalid values
+ * - Exclude javascript: and mailto: schemes
+ */
+function isValidHref(rawUrl: string | undefined, hubHost: string): boolean {
+  if (!rawUrl) return false;
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return false;
+
+  const lower = trimmed.toLowerCase();
+  if (lower === '#' || lower === 'javascript:void(0)' || lower === 'javascript:;' || lower.includes('linkless')) {
+    return false;
+  }
+  if (lower.startsWith('mailto:') || lower.startsWith('tel:')) {
+    return false;
+  }
+
+  try {
+    const u = new URL(trimmed);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+    // allow external https links; if you want to restrict to hubHost only, change this to compare hosts
+    return true;
+  } catch {
+    // Not an absolute URL — treat as invalid here (normalizeUrl should have converted relative paths earlier)
+    return false;
+  }
+}
+
+export default TopNavComponent;

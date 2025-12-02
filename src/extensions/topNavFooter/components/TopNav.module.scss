@@ -1,11 +1,26 @@
-.topNav {
+/* TopNav.module.scss
+   Complete styles for TopNav component.
+   Includes all classes referenced by the React component and interaction helpers.
+*/
+
+/* Wrapper for the whole top nav (placeholder container) */
+.topNavWrapper {
   width: 100%;
-  background: #ffffff;
+  background: navy;
   border-bottom: 1px solid rgba(0,0,0,0.06);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   box-sizing: border-box;
+  z-index: 1000;
 }
 
+/* Top-level nav bar */
+.topNav {
+  width: 100%;
+  box-sizing: border-box;
+  background: navy;
+}
+
+/* Inner container to center content */
 .topNavInner {
   max-width: 1200px;
   margin: 0 auto;
@@ -16,6 +31,7 @@
   box-sizing: border-box;
 }
 
+/* Brand area (optional) */
 .brand {
   font-weight: 700;
   color: #0f6ab4;
@@ -24,6 +40,7 @@
   white-space: nowrap;
 }
 
+/* Menu wrapper */
 .menuWrap {
   flex: 1 1 auto;
   display: flex;
@@ -32,7 +49,7 @@
   position: relative;
 }
 
-/* Desktop menu container (explicit) */
+/* Desktop menu container */
 .desktopMenu {
   display: block;
 }
@@ -47,27 +64,35 @@
   align-items: center;
 }
 
-/* Items */
+/* Top-level item */
 .topNavItem {
   position: relative;
   display: block;
   box-sizing: border-box;
+  padding-bottom: 2px; /* small hit area to avoid pointer gaps */
 }
 
-/* When item has children and is opened via keyboard toggle */
+/* Alternate class used in some markup for items with children */
 .topNavItemHasChildren {
   cursor: pointer;
 }
 
-/* Links */
+/* Also support 'has-children' class added by JS/React */
+.has-children {
+  cursor: pointer;
+}
+
+/* Link styles */
 .topNavLink {
   display: inline-block;
   padding: 8px 12px;
-  color: #333;
+  color: #ffffff;
   text-decoration: none;
   border-radius: 4px;
   font-weight: 600;
   transition: background 120ms ease, color 120ms ease;
+  word-break: break-word;
+  line-height: 1;
 }
 
 .topNavLink:hover,
@@ -77,10 +102,18 @@
   outline: none;
 }
 
+/* Focus ring for accessibility */
+.topNavLink:focus {
+  box-shadow: 0 0 0 3px rgba(15,106,180,0.12);
+  border-radius: 4px;
+}
+
+/* Dropdown container (absolute positioned) - placed flush under parent */
 .dropdown {
   position: absolute;
   left: 0;
-  top: calc(100% + 6px);
+  top: 100%;
+margin-top: 4px;
   min-width: 220px;
   background: #fff;
   border: 1px solid rgba(0,0,0,0.08);
@@ -90,19 +123,27 @@
   display: none;
   z-index: 2000;
   box-sizing: border-box;
+  pointer-events: auto;
 }
 
+/* Show dropdown when li has open class or focus-within or hover */
 .topNavItem:hover > .dropdown,
-.topNavItem:focus-within > .dropdown {
+.topNavItem:focus-within > .dropdown,
+.topNavItem.open > .dropdown,
+.has-children.open > .dropdown {
   display: block;
 }
 
+/* Dropdown list layout */
 .dropdown .topNavList {
   flex-direction: column;
   gap: 6px;
   align-items: stretch;
+  margin: 0;
+  padding: 0;
 }
 
+/* Dropdown link overrides */
 .dropdown .topNavLink {
   padding: 8px 10px;
   display: block;
@@ -111,18 +152,64 @@
   border-radius: 4px;
 }
 
+/* Submenu (used by React as 'subMenu') - nested dropdown */
+.subMenu {
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 6px;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  border-radius: 4px;
+  display: none;
+  z-index: 2100;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+/* Submenu items inside subMenu */
+.subMenu > .topNavItem {
+  display: block;
+}
+
+/* Submenu link styles */
+.subMenu .topNavLink {
+  display: block;
+  padding: 8px 12px;
+  color: #333;
+  font-size: 13px;
+}
+
+/* Show subMenu when parent has open or focus-within or hover */
+.topNavItem.open > .subMenu,
+.topNavItem:focus-within > .subMenu,
+.topNavItem:hover > .subMenu {
+  display: block;
+}
+
+/* Loading and error states (class names used in React) */
+.topNavLoading,
 .loading {
   color: #666;
   font-size: 13px;
   padding: 6px 8px;
 }
 
+.topNavError,
 .error {
   color: #a80000;
   font-size: 13px;
   padding: 6px 8px;
+  background: #fff6f6;
+  border-left: 4px solid #f44336;
 }
 
+/* Screen-reader only helper */
 .srOnly {
   position: absolute !important;
   height: 1px;
@@ -132,6 +219,7 @@
   white-space: nowrap;
 }
 
+/* Mobile toggle button */
 .mobileToggle {
   display: none;
   background: transparent;
@@ -141,6 +229,7 @@
   margin-left: auto;
 }
 
+/* Mobile menu */
 .mobileMenu {
   display: none;
   width: 100%;
@@ -151,10 +240,12 @@
   box-sizing: border-box;
 }
 
+/* When mobile menu is open */
 .mobileMenuOpen {
   display: block;
 }
 
+/* Mobile adjustments */
 @media (max-width: 720px) {
   .desktopMenu {
     display: none;
@@ -185,20 +276,63 @@
   .dropdown .topNavLink {
     padding-left: 12px;
   }
+
+  .subMenu {
+    position: static;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    background: transparent;
+    margin-left: 0;
+  }
+
+  .subMenu .topNavLink {
+    padding-left: 12px;
+  }
 }
 
-/* Utility classes */
+/* Utility: adjust dropdown to align right */
 .dropdownRightAdjust {
   right: 0;
   left: auto;
 }
 
+/* Ensure links wrap nicely */
 .topNavLink,
 .dropdown .topNavLink {
   word-break: break-word;
 }
 
+/* Small accessibility helpers */
 .topNavLink:focus {
   box-shadow: 0 0 0 3px rgba(15,106,180,0.12);
-  border-radius: 4px;
 }
+
+/* Prevent accidental pointer gaps by ensuring parent and dropdown overlap slightly */
+.topNavItem,
+.dropdown,
+.subMenu {
+  -webkit-tap-highlight-color: transparent;
+}
+.subMenu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: -1px; /* eliminate pointer gap */
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  border-radius: 4px;
+  display: none;
+  z-index: 2100;
+  padding: 8px 0;
+  pointer-events: auto;
+}
+
+.topNavItem:hover > .subMenu,
+.topNavItem:focus-within > .subMenu,
+.topNavItem.open > .subMenu {
+  display: block;
+}
+

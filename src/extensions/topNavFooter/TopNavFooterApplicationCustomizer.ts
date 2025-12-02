@@ -9,7 +9,7 @@ import {
 } from '@microsoft/sp-application-base';
 
 import TopNav from './components/TopNav';
-import FooterInjector from './components/FooterInjector';
+//import FooterInjector from './components/FooterInjector';
 //import styles from './TopNavFooter.module.scss';
 
 export interface ITopNavFooterApplicationCustomizerProperties {
@@ -79,11 +79,11 @@ export default class TopNavFooterApplicationCustomizer
       document.body.appendChild(container);
     }
 
-    const footerProps = {
-      html: this.properties.footerHtml || ''
-    };
+    // const footerProps = {
+    //   html: this.properties.footerHtml || ''
+    // };
 
-    ReactDOM.render(React.createElement(FooterInjector, footerProps), container);
+  //  ReactDOM.render(React.createElement(FooterInjector, footerProps), container);
   }
 
   private _createAndInsertTopNavAfterSearch(): void {
