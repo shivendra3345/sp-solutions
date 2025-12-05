@@ -1,30 +1,24 @@
 /* Inline into HeroBanner's .featuredList flex layout */
-.newsListInline {
-  display: contents; /* children become direct flex items of parent */
-}
-
-/* Placeholder when no items */
 .noItems {
   padding: 18px;
   color: #666;
   font-size: 14px;
 }
 
-/* Match featuredCard dimensions exactly */
-.newsCard {
+/* Match featuredCard/newsCard styling */
+.announcementCard {
   box-sizing: border-box;
   background: #fafafa;
   padding: 12px;
   border-radius: 8px;
-  width: 320px;          /* match .featuredCard */
-  flex: 0 0 320px;       /* prevent stretching in flex parent */
+  width: 320px;
+  flex: 0 0 320px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
-  position: relative;    /* create own stacking context */
 
   &:hover {
     transform: translateY(-3px);
@@ -32,30 +26,29 @@
   }
 }
 
-.newsImage {
+.announcementImage {
   width: 100%;
   height: 160px;
   object-fit: cover;
   margin-bottom: 8px;
   border-radius: 6px;
-  pointer-events: none; /* ensure image doesn't swallow click */
 }
 
-.newsTitle {
+.announcementTitle {
   margin: 0;
   font-size: 16px;
   color: #0b4f7a;
   font-weight: 600;
 }
 
-.newsExcerpt {
+.announcementExcerpt {
   margin: 8px 0 0 0;
   color: #555;
   font-size: 13px;
   line-height: 1.3;
 }
 
-.newsMeta {
+.announcementMeta {
   font-size: 12px;
   color: #666;
   margin-top: 8px;
@@ -76,14 +69,13 @@
   background: #fff;
   padding: 24px;
   border-radius: 8px;
-  max-width: 1000px;
+  max-width: 800px;
   width: 92%;
-  max-height: 98vh;
-  overflow: hidden;
+  max-height: 95vh;
+  overflow-y: auto;
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 600px;
 }
 
 .closeButton {
@@ -117,19 +109,15 @@
   color: #666;
 }
 
-.newsIframe {
-  flex: 1;
+.modalImage {
   width: 100%;
-  height: 90vh;
-  border: none;
+  height: auto;
+  margin-bottom: 12px;
   border-radius: 6px;
-  background: #fafafa;
 }
 
-/* Responsive: match featuredCard rules */
-@media (max-width: 980px) {
-  .newsCard {
-    width: 100%;
-    flex: 1 1 100%;
-  }
+.modalBody {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
 }

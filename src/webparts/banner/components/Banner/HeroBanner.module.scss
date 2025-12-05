@@ -379,3 +379,24 @@
     text-align: left;
   }
 }
+.featuredList {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start; /* avoid equal height stretching */
+}
+
+/* Featured card reference (unchanged) */
+.featuredCard {
+  box-sizing: border-box;
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 8px;
+  width: 320px;
+  flex: 0 0 320px; /* prevents stretching, matches newsCard */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
