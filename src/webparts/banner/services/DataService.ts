@@ -17,7 +17,9 @@ export default class DataService {
 
   public async getCurrentUserDisplayName(): Promise<string> {
     if (this.useMock || !this.context) {
-      return Promise.resolve('Sabina');
+
+      const displayName: string = this.context.pageContext.user.displayName;
+      return Promise.resolve(displayName);
     }
 
     // Example using SPHttpClient to get current user

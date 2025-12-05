@@ -7,7 +7,7 @@
 
 :root {
   /* fallback link colors if needed */
-  --link: #03787c;
+  --link: #006563;
   --linkHovered: #014446;
 }
 
@@ -58,9 +58,9 @@
   flex-direction: column;
   gap: 18px;
   align-items: center;
-  color: #ffffff; /* text on hero should be light for contrast */
+  color: #ffffff;
   width: 600px;
-  background-color: #1b4429; /* semi-opaque background for readability */
+  background-color: rgba(0, 101, 99, 0.7); /* 70% opaque */
 }
 
 /* center block: welcome + search stacked and centered */

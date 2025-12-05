@@ -23,7 +23,7 @@ export interface IMenuItem {
   children?: IMenuItem[];
 }
 
-const HARDCODED_HUB_URL = 'https://lcor1.sharepoint.com/sites/communication/';
+const HARDCODED_HUB_URL = 'https://qchc2501.sharepoint.com/';
 
 const TopNavComponent: React.FC<ITopNavComponentProps> = (props) => {
   const [menu, setMenu] = React.useState<IMenuItem[] | null>(null);
@@ -78,8 +78,8 @@ const TopNavComponent: React.FC<ITopNavComponentProps> = (props) => {
         setLoading(false);
       });
 
-  // Re-run if hubRootWebUrl, maxDepth or cacheTtlMinutes change
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Re-run if hubRootWebUrl, maxDepth or cacheTtlMinutes change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.hubRootWebUrl, props.maxDepth, props.cacheTtlMinutes]);
 
   if (loading) {
@@ -106,8 +106,12 @@ const TopNavComponent: React.FC<ITopNavComponentProps> = (props) => {
     <nav className={styles.topNav || 'topNav'}>
       <div className={styles.topNavInner || 'topNavInner'}>
         {/* brand removed per request */}
+        <div className={styles.brand || 'brand'}>
+          <img src="https://qchc2501.sharepoint.com/_api/siteiconmanager/getsitelogo?type=%271%27&hash=638883798660513472" alt="QCHC Logo" style={{ height: '40px' }} />
+        </div>
         <div className={styles.menuWrap || 'menuWrap'}>
           <ul className={styles.topNavList || 'topNavList'}>
+            {console.debug('TopNav rendering menu', menu)}
             {menu.map((item, idx) => <TopLevelMenuItem key={idx} item={item} hubHost={hubHost} />)}
           </ul>
         </div>

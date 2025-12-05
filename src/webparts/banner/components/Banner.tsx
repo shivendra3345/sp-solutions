@@ -7,15 +7,15 @@ import HeroBanner from './Banner/HeroBanner';
 
 export default class Banner extends React.Component<IBannerProps, {}> {
   public render(): React.ReactElement<IBannerProps> {
-    const {       
-      hasTeamsContext,     
+    const {
+      hasTeamsContext,
       context
     } = this.props;
 
     return (
-      <section id='customSec'  className={`${styles.banner} 'customSec' ${hasTeamsContext ? styles.teams : ''}`}>
+      <section id='customSec' className={`${styles.banner} 'customSec' ${hasTeamsContext ? styles.teams : ''}`}>
         <div className={styles.welcome}>
-          <HeroBanner context={context} heroImageUrl='https://lcor1.sharepoint.com//sites/TheLoop/Banner/Loop%20Homepage%20Images2%20(003).jpg'/>
+          <HeroBanner context={context} heroImageUrl='https://qchc2501.sharepoint.com/SiteAssets/Images/banner.jpg' />
         </div>
       </section>
     );

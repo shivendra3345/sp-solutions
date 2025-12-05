@@ -5,7 +5,7 @@
   "initialPage": "https://{tenantDomain}/_layouts/workbench.aspx",
   "serveConfigurations": {
     "default": {
-      "pageUrl": "https://{tenantDomain}/SitePages/myPage.aspx",
+      "pageUrl": "https://qchc2501.sharepoint.com/SitePages/UAT.aspx",
       "customActions": {
         "e5d76c9f-1527-46f5-815d-7e19ad7e28cc": {
           "location": "ClientSideExtension.ApplicationCustomizer",
@@ -16,7 +16,7 @@
       }
     },
     "topNavFooter": {
-      "pageUrl": "https://{tenantDomain}/SitePages/myPage.aspx",
+      "pageUrl": "https://qchc2501.sharepoint.com/SitePages/UAT.aspx",
       "customActions": {
         "e5d76c9f-1527-46f5-815d-7e19ad7e28cc": {
           "location": "ClientSideExtension.ApplicationCustomizer",
