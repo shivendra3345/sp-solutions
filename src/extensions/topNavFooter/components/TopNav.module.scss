@@ -1,12 +1,10 @@
 /* TopNav.module.scss
    Complete styles for TopNav component.
-   Includes all classes referenced by the React component and interaction helpers.
 */
 
-/* Wrapper for the whole top nav (placeholder container) */
+/* Wrapper */
 .topNavWrapper {
   width: 100%;
-  //background:#edca13;
   border-bottom: 1px solid rgba(0,0,0,0.06);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   box-sizing: border-box;
@@ -18,11 +16,9 @@
 .topNav {
   width: 100%;
   box-sizing: border-box;
-
-  //background: #edca13;
 }
 
-/* Inner container to center content */
+/* Inner container */
 .topNavInner {
   max-width: 1200px;
   margin: 0 auto;
@@ -33,7 +29,7 @@
   box-sizing: border-box;
 }
 
-/* Brand area (optional) */
+/* Brand */
 .brand {
   font-weight: 700;
   color: #0f6ab4;
@@ -51,7 +47,7 @@
   position: relative;
 }
 
-/* Desktop menu container */
+/* Desktop menu */
 .desktopMenu {
   display: block;
 }
@@ -64,7 +60,6 @@
   display: flex;
   gap: 8px;
   align-items: center;
-
 }
 
 /* Top-level item */
@@ -72,15 +67,11 @@
   position: relative;
   display: block;
   box-sizing: border-box;
-  padding-bottom: 2px; /* small hit area to avoid pointer gaps */
+  padding-bottom: 8px; /* bigger hit area to avoid pointer gaps */
 }
 
-/* Alternate class used in some markup for items with children */
-.topNavItemHasChildren {
-  cursor: pointer;
-}
-
-/* Also support 'has-children' class added by JS/React */
+/* Items with children */
+.topNavItemHasChildren,
 .has-children {
   cursor: pointer;
 }
@@ -94,29 +85,26 @@
   border-radius: 4px;
   font-weight: 600;
   transition: background 120ms ease, color 120ms ease;
-  word-break: break-word;
   line-height: 1;
 }
 
 .topNavLink:hover,
 .topNavLink:focus {
-   
   color: #333;
   outline: none;
 }
 
-/* Focus ring for accessibility */
 .topNavLink:focus {
   box-shadow: 0 0 0 3px rgba(15,106,180,0.12);
   border-radius: 4px;
 }
 
-/* Dropdown container (absolute positioned) - placed flush under parent */
+/* Dropdown container */
 .dropdown {
   position: absolute;
   left: 0;
   top: 100%;
-margin-top: 4px;
+  margin-top: 0; /* eliminate vertical gap */
   min-width: 220px;
   background: #fff;
   border: 1px solid rgba(0,0,0,0.08);
@@ -129,11 +117,12 @@ margin-top: 4px;
   pointer-events: auto;
 }
 
-/* Show dropdown when li has open class or focus-within or hover */
+/* Show dropdown when parent or dropdown itself hovered */
 .topNavItem:hover > .dropdown,
 .topNavItem:focus-within > .dropdown,
 .topNavItem.open > .dropdown,
-.has-children.open > .dropdown {
+.has-children.open > .dropdown,
+.dropdown:hover {
   display: block;
 }
 
@@ -155,15 +144,15 @@ margin-top: 4px;
   border-radius: 4px;
 }
 
-/* Submenu (used by React as 'subMenu') - nested dropdown */
+/* Submenu */
 .subMenu {
   list-style: none;
   margin: 0;
-  padding: 6px 0;
+  padding: 8px 0;
   position: absolute;
   top: 0;
   left: 100%;
-  margin-left: 6px;
+  margin-left: -1px; /* eliminate pointer gap */
   min-width: 200px;
   background: #fff;
   border: 1px solid rgba(0,0,0,0.08);
@@ -175,7 +164,7 @@ margin-top: 4px;
   pointer-events: auto;
 }
 
-/* Submenu items inside subMenu */
+/* Submenu items */
 .subMenu > .topNavItem {
   display: block;
 }
@@ -188,14 +177,15 @@ margin-top: 4px;
   font-size: 13px;
 }
 
-/* Show subMenu when parent has open or focus-within or hover */
+/* Show submenu when parent or submenu hovered */
 .topNavItem.open > .subMenu,
 .topNavItem:focus-within > .subMenu,
-.topNavItem:hover > .subMenu {
+.topNavItem:hover > .subMenu,
+.subMenu:hover {
   display: block;
 }
 
-/* Loading and error states (class names used in React) */
+/* Loading and error states */
 .topNavLoading,
 .loading {
   color: #666;
@@ -212,7 +202,7 @@ margin-top: 4px;
   border-left: 4px solid #f44336;
 }
 
-/* Screen-reader only helper */
+/* Screen-reader only */
 .srOnly {
   position: absolute !important;
   height: 1px;
@@ -222,7 +212,7 @@ margin-top: 4px;
   white-space: nowrap;
 }
 
-/* Mobile toggle button */
+/* Mobile toggle */
 .mobileToggle {
   display: none;
   background: transparent;
@@ -243,7 +233,6 @@ margin-top: 4px;
   box-sizing: border-box;
 }
 
-/* When mobile menu is open */
 .mobileMenuOpen {
   display: block;
 }
@@ -257,10 +246,6 @@ margin-top: 4px;
   .mobileToggle {
     display: inline-flex;
     align-items: center;
-  }
-
-  .mobileMenu {
-    display: none;
   }
 
   .mobileMenu .topNavList {
@@ -306,36 +291,14 @@ margin-top: 4px;
   word-break: break-word;
 }
 
-/* Small accessibility helpers */
+/* Accessibility focus */
 .topNavLink:focus {
   box-shadow: 0 0 0 3px rgba(15,106,180,0.12);
 }
 
-/* Prevent accidental pointer gaps by ensuring parent and dropdown overlap slightly */
+/* Prevent accidental pointer gaps */
 .topNavItem,
 .dropdown,
 .subMenu {
   -webkit-tap-highlight-color: transparent;
 }
-.subMenu {
-  position: absolute;
-  top: 0;
-  left: 100%;
-  margin-left: -1px; /* eliminate pointer gap */
-  min-width: 200px;
-  background: #fff;
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-  border-radius: 4px;
-  display: none;
-  z-index: 2100;
-  padding: 8px 0;
-  pointer-events: auto;
-}
-
-.topNavItem:hover > .subMenu,
-.topNavItem:focus-within > .subMenu,
-.topNavItem.open > .subMenu {
-  display: block;
-}
-

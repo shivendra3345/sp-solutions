@@ -38,6 +38,11 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+
+  display: flex;              /* enable flexbox */
+  align-items: flex-end;      /* push children to bottom */
+  justify-content: center;    /* center horizontally */
+
 }
 
 .heroOverlay {
@@ -49,7 +54,8 @@
 
 /* inner content sits above overlay and is constrained */
 .heroContent {
-  position: relative;
+   position: relative;   /* instead of relative */
+  //bottom: 0;            /* stick to bottom */
   z-index: 2;
   padding: 36px 20px;
   max-width: 1200px;
@@ -399,4 +405,34 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.heroSection {
+  position: relative;
+  width: 100%;
+  min-height: 400px; /* increased height */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.carouselControls {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.6);
+  cursor: pointer;
+}
+
+.activeDot {
+  background: #fff;
 }

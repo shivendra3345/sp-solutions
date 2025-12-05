@@ -14,28 +14,58 @@ import InfoTile from './InfoTile';
 import DataService, { IFeaturedItem } from '../../services/DataService';
 import NewsList from '../news/NewsList';
 import AnnouncementList from '../announcement/AnnouncementList';
+import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 
-const quickLinks = [
-  { key: 'helpdesk', label: 'Helpdesk', icon: 'Help' },
-  { key: 'directory', label: 'Directory', icon: 'Contact' },
-  { key: 'news', label: 'News', icon: 'RSS' },
-  { key: 'resources', label: 'Resources', icon: 'OpenFile' },
-  { key: 'benefits', label: 'Benefits', icon: 'Money' },
-  { key: 'profile', label: 'Profile', icon: 'ContactCard' }
-];
+interface IBannerItem {
+  Id: number;
+  Title: string;
+  Active: boolean;
+  AttachmentFiles?: { FileName: string; ServerRelativeUrl: string }[];
+}
 
 type TabKey = 'all' | 'news' | 'announcements' | 'success';
 
-const HeroBanner: React.FC<IBannerProps & { heroImageUrl?: string }> = ({ context, heroImageUrl }) => {
+const HeroBanner: React.FC<IBannerProps> = ({ context }) => {
   const [userName, setUserName] = useState<string>('User');
   const [featured, setFeatured] = useState<IFeaturedItem[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
+  const [bannerImages, setBannerImages] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
 
   useEffect(() => {
     const svc = new DataService(context);
     svc.getCurrentUserDisplayName().then(name => setUserName(name));
     svc.getFeaturedItems().then(items => setFeatured(items));
+
+    // Fetch banner images from SharePoint list "Banner"
+    const url =
+      `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('Banner')/items` +
+      `?$select=Id,Title,Active,AttachmentFiles&$expand=AttachmentFiles`;
+
+    context.spHttpClient.get(url, SPHttpClient.configurations.v1)
+      .then((res: SPHttpClientResponse) => res.json())
+      .then((data) => {
+        const items: IBannerItem[] = data.value || [];
+        const activeImages: string[] = [];
+        items.forEach(item => {
+          if (item.Active && item.AttachmentFiles && item.AttachmentFiles.length > 0) {
+            activeImages.push(item.AttachmentFiles[0].ServerRelativeUrl);
+          }
+        });
+        setBannerImages(activeImages);
+      })
+      .catch(err => console.error("Error fetching banner images:", err));
   }, [context]);
+
+  // Carousel auto-advance
+  useEffect(() => {
+    if (bannerImages.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentIndex(prev => (prev + 1) % bannerImages.length);
+      }, 5000); // 5s
+      return () => clearInterval(interval);
+    }
+  }, [bannerImages]);
 
   function getTags(item: any): string[] {
     if (!item) return [];
@@ -63,13 +93,16 @@ const HeroBanner: React.FC<IBannerProps & { heroImageUrl?: string }> = ({ contex
     return featured.filter(f => matchesTab(f, activeTab));
   }, [featured, activeTab]);
 
-  const heroStyle: React.CSSProperties = heroImageUrl
-    ? ({ ['--hero-bg' as any]: `url('${heroImageUrl}')` } as React.CSSProperties)
-    : {};
-
   return (
     <div className={styles.banner}>
-      <div className={styles.heroSection} style={heroStyle}>
+      <div
+        className={styles.heroSection}
+        style={{
+          backgroundImage: bannerImages.length > 0
+            ? `url('${bannerImages[currentIndex]}')`
+            : 'none'
+        }}
+      >
         <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>
           <div className={styles.centerBlock}>
@@ -91,11 +124,31 @@ const HeroBanner: React.FC<IBannerProps & { heroImageUrl?: string }> = ({ contex
 
           <div className={styles.quickLinks}>
             <Stack horizontal wrap tokens={{ childrenGap: 12 }}>
-              {quickLinks.map(link => (
+              {[
+                { key: 'helpdesk', label: 'Helpdesk', icon: 'Help' },
+                { key: 'directory', label: 'Directory', icon: 'Contact' },
+                { key: 'news', label: 'News', icon: 'RSS' },
+                { key: 'resources', label: 'Resources', icon: 'OpenFile' },
+                { key: 'benefits', label: 'Benefits', icon: 'Money' },
+                { key: 'profile', label: 'Profile', icon: 'ContactCard' }
+              ].map(link => (
                 <InfoTile key={link.key} iconName={link.icon} label={link.label} />
               ))}
             </Stack>
           </div>
+
+          {/* Carousel controls */}
+          {bannerImages.length > 1 && (
+            <div className={styles.carouselControls}>
+              {bannerImages.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`${styles.dot} ${idx === currentIndex ? styles.activeDot : ''}`}
+                  onClick={() => setCurrentIndex(idx)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
