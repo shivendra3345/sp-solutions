@@ -4,7 +4,7 @@ import {
   Persona,
   PersonaSize,
   IconButton,
-  Stack,
+  // Stack,
   Pivot,
   PivotItem
 } from '@fluentui/react';
@@ -109,7 +109,9 @@ const HeroBanner: React.FC<IBannerProps> = ({ context }) => {
             <Persona
               text={`Welcome, ${userName}!`}
               size={PersonaSize.size48}
-              styles={{
+              imageUrl={undefined}          // no image
+              hidePersonaDetails={false}    // keep text
+              styles={({
                 root: { alignItems: 'center', padding: 0 },
                 primaryText: {
                   color: '#ffffff',
@@ -117,13 +119,14 @@ const HeroBanner: React.FC<IBannerProps> = ({ context }) => {
                   fontWeight: 600,
                   lineHeight: '1.1'
                 },
-                secondaryText: { display: 'none' }
-              }}
+                secondaryText: { display: 'none' },
+                coin: { display: 'none' } // hides avatar area (use "coin" slot for Persona)
+              } as any)}
             />
           </div>
 
           <div className={styles.quickLinks}>
-            <Stack horizontal wrap tokens={{ childrenGap: 12 }}>
+            {/* <Stack horizontal wrap tokens={{ childrenGap: 12 }}>
               {[
                 { key: 'helpdesk', label: 'Helpdesk', icon: 'Help' },
                 { key: 'directory', label: 'Directory', icon: 'Contact' },
@@ -132,9 +135,10 @@ const HeroBanner: React.FC<IBannerProps> = ({ context }) => {
                 { key: 'benefits', label: 'Benefits', icon: 'Money' },
                 { key: 'profile', label: 'Profile', icon: 'ContactCard' }
               ].map(link => (
-                <InfoTile key={link.key} iconName={link.icon} label={link.label} />
+                <InfoTile key={link.key} iconName={link.icon} label={link.label} context={context} />
               ))}
-            </Stack>
+            </Stack> */}
+            <InfoTile context={context} />
           </div>
 
           {/* Carousel controls */}
