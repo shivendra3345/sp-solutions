@@ -22,6 +22,8 @@ interface IJoinee {
     StartDate?: string;
     Department?: string;
     SiteLocation?: string;
+    EmployeeIs?: string;
+    Status?: string;
     Picture?: string;
 }
 
@@ -57,6 +59,8 @@ const WelcomeNewJoiners: React.FC<IProps> = ({ context }) => {
                     const start = getField(i, ['Start_x0020_Date', 'StartDate', 'Start_x0020_Date0']);
                     const dept = getField(i, ['Department']);
                     const site = getField(i, ['Site_x0020_Location', 'SiteLocation']);
+                    const employeeIs = getField(i, ['Employee_x0020_Is', 'EmployeeIs', 'Employee%20Is', 'EmployeeIs0']);
+                    const status = getField(i, ['Status', 'Status0', 'Status_x0020_']);
 
                     const displayName = (first || last) ? `${first || ''} ${last || ''}`.trim() : (i.Title || 'New Joiner');
 
@@ -69,17 +73,27 @@ const WelcomeNewJoiners: React.FC<IProps> = ({ context }) => {
                         StartDate: start ? (new Date(start)).toISOString() : undefined,
                         Department: dept,
                         SiteLocation: site,
+                        EmployeeIs: employeeIs,
+                        Status: status,
                         Picture: getField(i, ['Picture'])
                     } as IJoinee;
                 });
 
-                setJoinees(items.slice(0, 6));
+                const normalized = (v: any) => (v || '').toString().toLowerCase();
+                const filtered = items.filter((it: IJoinee) => {
+                    const ei = normalized(it.EmployeeIs);
+                    const st = normalized(it.Status);
+                    const isNew = ei.includes('new') || ei.includes('new hire');
+                    const isComplete = st.includes('complete') || st.includes('completed');
+                    return isNew && isComplete;
+                });
+
+                setJoinees(filtered.slice(0, 6));
             } catch (e) {
                 // If list not found or error, fallback to sample data
                 console.warn('Unable to fetch NewJoinees list, using sample data.', e);
                 setJoinees([
-                    { Id: 1, Title: 'A', EmployeeTitle: 'S' },
-
+                    { Id: 1, Title: 'Aisha Khan', EmployeeTitle: 'Software Engineer', EmployeeIs: 'New Hire', Status: 'Complete' },
                 ]);
             }
         };
