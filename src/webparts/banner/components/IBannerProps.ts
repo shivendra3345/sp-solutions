@@ -6,5 +6,7 @@ export interface IBannerProps {
   environmentMessage?: string;
   hasTeamsContext?: boolean;
   userDisplayName?: string;
+  /** Toggle whether the welcome panel for new joiners is shown on the page */
+  showWelcome?: boolean;
   context: WebPartContext; // SPFx web part context
 }

@@ -9,13 +9,13 @@ export default class Banner extends React.Component<IBannerProps, {}> {
   public render(): React.ReactElement<IBannerProps> {
     const {
       hasTeamsContext,
-      context
+
     } = this.props;
     // heroImageUrl = 'https://qchc2501.sharepoint.com/SiteAssets/Images/banner.jpg' 
     return (
       <section id='customSec' className={`${styles.banner} 'customSec' ${hasTeamsContext ? styles.teams : ''}`}>
         <div className={styles.welcome}>
-          <HeroBanner context={context} />
+          <HeroBanner {...this.props} />
         </div>
       </section>
     );

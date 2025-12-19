@@ -1,19 +1,21 @@
 import * as React from 'react';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Persona,
   PersonaSize,
-  IconButton,
+  //IconButton,
   // Stack,
   Pivot,
   PivotItem
 } from '@fluentui/react';
 import styles from './HeroBanner.module.scss';
 import type { IBannerProps } from '../IBannerProps';
+import WelcomeNewJoiners from './WelcomeNewJoiners';
 import InfoTile from './InfoTile';
-import DataService, { IFeaturedItem } from '../../services/DataService';
+import DataService, { } from '../../services/DataService';
 import NewsList from '../news/NewsList';
 import AnnouncementList from '../announcement/AnnouncementList';
+import CombinedFeed from './CombinedFeed';
 import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 
 interface IBannerItem {
@@ -23,11 +25,11 @@ interface IBannerItem {
   AttachmentFiles?: { FileName: string; ServerRelativeUrl: string }[];
 }
 
-type TabKey = 'all' | 'news' | 'announcements' | 'success';
+type TabKey = 'all' | 'news' | 'announcements';
 
-const HeroBanner: React.FC<IBannerProps> = ({ context }) => {
+const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome }) => {
   const [userName, setUserName] = useState<string>('User');
-  const [featured, setFeatured] = useState<IFeaturedItem[]>([]);
+  //const [featured, setFeatured] = useState<IFeaturedItem[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [bannerImages, setBannerImages] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -35,12 +37,12 @@ const HeroBanner: React.FC<IBannerProps> = ({ context }) => {
   useEffect(() => {
     const svc = new DataService(context);
     svc.getCurrentUserDisplayName().then(name => setUserName(name));
-    svc.getFeaturedItems().then(items => setFeatured(items));
+    // svc.getFeaturedItems().then(items => setFeatured(items));
 
     // Fetch banner images from SharePoint list "Banner"
     const url =
       `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('Banner')/items` +
-      `?$select=Id,Title,Active,AttachmentFiles&$expand=AttachmentFiles`;
+      `?$select=Id,Title,Active,AttachmentFiles&$expand=AttachmentFiles&$top=3`;
 
     context.spHttpClient.get(url, SPHttpClient.configurations.v1)
       .then((res: SPHttpClientResponse) => res.json())
@@ -67,32 +69,32 @@ const HeroBanner: React.FC<IBannerProps> = ({ context }) => {
     }
   }, [bannerImages]);
 
-  function getTags(item: any): string[] {
-    if (!item) return [];
-    const candidates = [item.tags, item.Tags, item.category, item.Category];
-    for (const c of candidates) {
-      if (!c) continue;
-      if (Array.isArray(c)) return c.map(t => String(t).toLowerCase());
-      if (typeof c === 'string') return [c.toLowerCase()];
-    }
-    return [];
-  }
-
-  function matchesTab(f: any, activeTab: TabKey): boolean {
-    const cat = (f.category || f.Category || '').toString().toLowerCase();
-    const tags = getTags(f);
-    const tagSet = new Set(tags);
-    if (activeTab === 'news') return cat === 'news' || tagSet.has('news');
-    if (activeTab === 'announcements') return cat.includes('announcement') || tagSet.has('announcements') || tagSet.has('announcement');
-    if (activeTab === 'success') return cat === 'success' || tagSet.has('success') || tagSet.has('success story') || tagSet.has('success-stories');
-    return true;
-  }
-
-  const filteredFeatured = useMemo(() => {
-    if (activeTab === 'all') return featured;
-    return featured.filter(f => matchesTab(f, activeTab));
-  }, [featured, activeTab]);
-
+  /*  function getTags(item: any): string[] {
+     if (!item) return [];
+     const candidates = [item.tags, item.Tags, item.category, item.Category];
+     for (const c of candidates) {
+       if (!c) continue;
+       if (Array.isArray(c)) return c.map(t => String(t).toLowerCase());
+       if (typeof c === 'string') return [c.toLowerCase()];
+     }
+     return [];
+   }
+ 
+   function matchesTab(f: any, activeTab: TabKey): boolean {
+     const cat = (f.category || f.Category || '').toString().toLowerCase();
+     const tags = getTags(f);
+     const tagSet = new Set(tags);
+     if (activeTab === 'news') return cat === 'news' || tagSet.has('news');
+     if (activeTab === 'announcements') return cat.includes('announcement') || tagSet.has('announcements') || tagSet.has('announcement');
+     if (activeTab === 'success') return cat === 'success' || tagSet.has('success') || tagSet.has('success story') || tagSet.has('success-stories');
+     return true;
+   }
+ 
+   const filteredFeatured = useMemo(() => {
+      if (activeTab === 'all') return featured;
+      return featured.filter(f => matchesTab(f, activeTab));
+    }, [featured, activeTab]);
+  */
   return (
     <div className={styles.banner}>
       <div
@@ -126,18 +128,7 @@ const HeroBanner: React.FC<IBannerProps> = ({ context }) => {
           </div>
 
           <div className={styles.quickLinks}>
-            {/* <Stack horizontal wrap tokens={{ childrenGap: 12 }}>
-              {[
-                { key: 'helpdesk', label: 'Helpdesk', icon: 'Help' },
-                { key: 'directory', label: 'Directory', icon: 'Contact' },
-                { key: 'news', label: 'News', icon: 'RSS' },
-                { key: 'resources', label: 'Resources', icon: 'OpenFile' },
-                { key: 'benefits', label: 'Benefits', icon: 'Money' },
-                { key: 'profile', label: 'Profile', icon: 'ContactCard' }
-              ].map(link => (
-                <InfoTile key={link.key} iconName={link.icon} label={link.label} context={context} />
-              ))}
-            </Stack> */}
+
             <InfoTile context={context} />
           </div>
 
@@ -157,6 +148,7 @@ const HeroBanner: React.FC<IBannerProps> = ({ context }) => {
       </div>
 
       <div className={styles.content}>
+
         <div className={styles.tabsAndHeader}>
           <div className={styles.tabsContainer}>
             <Pivot
@@ -169,42 +161,37 @@ const HeroBanner: React.FC<IBannerProps> = ({ context }) => {
               <PivotItem headerText="All" itemKey="all" />
               <PivotItem headerText="News" itemKey="news" />
               <PivotItem headerText="Announcements" itemKey="announcements" />
-              <PivotItem headerText="Success Stories" itemKey="success" />
             </Pivot>
           </div>
         </div>
 
         <div className={styles.featuredList}>
-          {(activeTab === 'news' || activeTab === 'all') && (
-            <NewsList context={context} />
-          )}
-
-          {(activeTab === 'announcements' || activeTab === 'all') && (
-            <AnnouncementList context={context} />
-          )}
-
-          {(activeTab === 'all' || activeTab === 'success') && (
-            filteredFeatured.length === 0 ? (
-              <div className={styles.noItems}>No items to show for this category.</div>
-            ) : (
-              filteredFeatured.map(item => (
-                <div key={item.id} className={styles.featuredCard}>
-                  <div className={styles.cardHeader}>
-                    <h3 className={styles.cardTitle}>{item.title}</h3>
-                  </div>
-                  <div className={styles.cardBody}>
-                    <p className={styles.cardExcerpt}>{item.excerpt}</p>
-                  </div>
-                  <div className={styles.cardFooter}>
-                    <span className={styles.meta}>{item.views} views</span>
-                    <IconButton iconProps={{ iconName: 'Comment' }} title="Comments" ariaLabel="Comments" />
-                  </div>
-                </div>
-              ))
-            )
-          )}
+          {activeTab === 'news' && <NewsList context={context} />}
+          {activeTab === 'announcements' && <AnnouncementList context={context} />}
+          {activeTab === 'all' && <CombinedFeed context={context} maxItems={6} />}
         </div>
       </div>
+
+      <div className={styles.sidePanels}>
+        {showWelcome && (
+          <div className={styles.panel}>
+            <WelcomeNewJoiners context={context} />
+          </div>
+        )}
+
+        <div className={styles.panel}>
+          <h3>Other Component</h3>
+          <div>Replace this area with your other component.</div>
+        </div>
+      </div>
+
+
+      <div>
+
+
+
+      </div>
+
     </div>
   );
 };

@@ -3,7 +3,8 @@ import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import {
   type IPropertyPaneConfiguration,
-  PropertyPaneTextField
+  PropertyPaneTextField,
+  PropertyPaneToggle
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
@@ -15,6 +16,8 @@ import { WebPartContext } from '@microsoft/sp-webpart-base';
 
 export interface IBannerWebPartProps {
   description: string;
+  /** Show the welcome panel for new joiners */
+  showWelcome?: boolean;
   context: WebPartContext;
 }
 
@@ -32,7 +35,8 @@ export default class BannerWebPart extends BaseClientSideWebPart<IBannerWebPartP
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
         userDisplayName: this.context.pageContext.user.displayName,
-        context: this.context
+        context: this.context,
+        showWelcome: this.properties.showWelcome !== undefined ? this.properties.showWelcome : true
       }
     );
 
@@ -113,6 +117,12 @@ export default class BannerWebPart extends BaseClientSideWebPart<IBannerWebPartP
               groupFields: [
                 PropertyPaneTextField('description', {
                   label: strings.DescriptionFieldLabel
+                })
+                ,
+                PropertyPaneToggle('showWelcome', {
+                  label: 'Show Welcome Panel',
+                  onText: 'Shown',
+                  offText: 'Hidden'
                 })
               ]
             }

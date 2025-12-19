@@ -48,7 +48,7 @@
 .heroOverlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.28); /* dark overlay for contrast */
+  //background: rgba(0,0,0,0.28); /* dark overlay for contrast */
   z-index: 1;
 }
 
@@ -441,4 +441,17 @@
   flex-wrap: wrap;
   gap: 14px;
   justify-content: center;
+}
+
+.modalImage {
+  width: 100%;
+  height: auto;
+  margin-bottom: 12px;
+  border-radius: 6px;
+}
+
+.modalBody {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
 }

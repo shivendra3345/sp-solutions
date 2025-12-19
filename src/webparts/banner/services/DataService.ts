@@ -32,9 +32,7 @@ export default class DataService {
   public async getFeaturedItems(): Promise<IFeaturedItem[]> {
     if (this.useMock || !this.context) {
       return Promise.resolve([
-        { id: '1', title: 'Employee Success Stories: Share Your Journey', excerpt: 'Tell us how you grew at the company.', views: 6, comments: 0, category: 'Announcements' },
-        { id: '2', title: 'Expanding Our Reach with New Talent', excerpt: 'We welcome new team members across departments.', views: 3, comments: 0, category: 'Announcements' },
-        { id: '3', title: "Opening of Our Latest Exhibit 'Entertainment Nation'", excerpt: 'Join the opening ceremony next week.', views: 2, comments: 0, category: 'Events' }
+        { id: '1', title: 'Employee Success Stories: Share Your Journey', excerpt: 'Tell us how you grew at the company.', views: 6, comments: 0, category: 'Announcements' }
       ]);
     }
 
