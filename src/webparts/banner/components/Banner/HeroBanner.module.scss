@@ -355,6 +355,15 @@
   padding: 0 20px;
 }
 
+/* Section titles used above content areas (news, events, welcome) */
+.title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #0b4f7a;
+  font-weight: 600;
+  text-align: left;
+}
+
 .tabsContainer {
   flex: 1 1 auto;
   min-width: 240px;

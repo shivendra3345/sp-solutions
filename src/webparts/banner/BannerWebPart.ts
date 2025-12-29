@@ -20,6 +20,14 @@ export interface IBannerWebPartProps {
   showWelcome?: boolean;
   /** Comma-separated list of site URLs to exclude from events */
   excludedSites?: string;
+  /** Show events carousel */
+  showEvents?: boolean;
+  /** Show news/announcements */
+  showNews?: boolean;
+  /** Titles configurable from property pane */
+  welcomeTitle?: string;
+  eventsTitle?: string;
+  newsTitle?: string;
   context: WebPartContext;
 }
 
@@ -39,7 +47,12 @@ export default class BannerWebPart extends BaseClientSideWebPart<IBannerWebPartP
         userDisplayName: this.context.pageContext.user.displayName,
         context: this.context,
         showWelcome: this.properties.showWelcome !== undefined ? this.properties.showWelcome : true,
-        excludedSites: this.properties.excludedSites || ''
+        excludedSites: this.properties.excludedSites || '',
+        showEvents: this.properties.showEvents !== undefined ? this.properties.showEvents : true,
+        showNews: this.properties.showNews !== undefined ? this.properties.showNews : true,
+        welcomeTitle: this.properties.welcomeTitle || 'Welcome New Joiners',
+        eventsTitle: this.properties.eventsTitle || 'Events',
+        newsTitle: this.properties.newsTitle || 'News & Announcements'
       }
     );
 
@@ -122,6 +135,25 @@ export default class BannerWebPart extends BaseClientSideWebPart<IBannerWebPartP
                   label: strings.DescriptionFieldLabel
                 })
                 ,
+                PropertyPaneToggle('showNews', {
+                  label: 'Show News Section',
+                  onText: 'Shown',
+                  offText: 'Hidden'
+                }),
+                PropertyPaneToggle('showEvents', {
+                  label: 'Show Events Carousel',
+                  onText: 'Shown',
+                  offText: 'Hidden'
+                }),
+                PropertyPaneTextField('newsTitle', {
+                  label: 'News Section Title'
+                }),
+                PropertyPaneTextField('welcomeTitle', {
+                  label: 'Welcome Panel Title'
+                }),
+                PropertyPaneTextField('eventsTitle', {
+                  label: 'Events Carousel Title'
+                }),
                 PropertyPaneToggle('showWelcome', {
                   label: 'Show Welcome Panel',
                   onText: 'Shown',

@@ -29,9 +29,10 @@ interface IJoinee {
 
 interface IProps {
     context: any; // WebPartContext
+    title?: string;
 }
 
-const WelcomeNewJoiners: React.FC<IProps> = ({ context }) => {
+const WelcomeNewJoiners: React.FC<IProps> = ({ context, title }) => {
     const [joinees, setJoinees] = useState<IJoinee[]>([]);
     const [selected, setSelected] = useState<IJoinee | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -140,7 +141,7 @@ const WelcomeNewJoiners: React.FC<IProps> = ({ context }) => {
 
     return (
         <div className={styles.welcomePane}>
-            <h3 className={styles.title}>Welcome New Joiners</h3>
+            <h3 className={styles.title}>{title || 'Welcome New Joiners'}</h3>
             <div className={styles.list}>
                 {joinees.map(j => (
                     <div key={j.Id} className={styles.joinee} onClick={() => openDialog(j)}>

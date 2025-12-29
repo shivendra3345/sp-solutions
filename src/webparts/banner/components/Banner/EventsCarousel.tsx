@@ -20,7 +20,7 @@ const RANDOM_BANNERS = [
     '/SiteAssets/images/random3.jpg'
 ];
 
-const EventsCarousel: React.FC<{ context: any; excludedSitesCsv?: string; excludedListsCsv?: string }> = ({ context, excludedSitesCsv = '', excludedListsCsv = '' }) => {
+const EventsCarousel: React.FC<{ context: any; excludedSitesCsv?: string; excludedListsCsv?: string; title?: string }> = ({ context, excludedSitesCsv = '', excludedListsCsv = '', title }) => {
     const [items, setItems] = useState<IEventItem[]>([]);
     const [index, setIndex] = useState(0);
     const mounted = useRef(true);
@@ -330,7 +330,7 @@ const EventsCarousel: React.FC<{ context: any; excludedSitesCsv?: string; exclud
 
     return (
         <div>
-            <h3 className={styles.title}>Events</h3>
+            <h3 className={styles.title}>{title || 'Events'}</h3>
             <div className={styles.carouselWrap}>
                 <button className={styles.arrowLeft} aria-label="Previous" onClick={prev}>‹</button>
                 <div className={styles.slides}>

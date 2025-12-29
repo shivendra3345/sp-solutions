@@ -28,7 +28,7 @@ interface IBannerItem {
 
 type TabKey = 'all' | 'news' | 'announcements';
 
-const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSites }) => {
+const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSites, showNews = true, showEvents = true, welcomeTitle, eventsTitle, newsTitle }) => {
   const [userName, setUserName] = useState<string>('User');
   //const [featured, setFeatured] = useState<IFeaturedItem[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
@@ -148,43 +148,50 @@ const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSite
         </div>
       </div>
 
-      <div className={styles.content}>
+      {showNews && (
+        <div className={styles.content}>
 
-        <div className={styles.tabsAndHeader}>
-          <div className={styles.tabsContainer}>
-            <Pivot
-              selectedKey={activeTab}
-              onLinkClick={(item) => {
-                const key = (item?.props.itemKey || 'all') as TabKey;
-                setActiveTab(key);
-              }}
-              linkFormat="tabs">
-              <PivotItem headerText="All" itemKey="all" />
-              <PivotItem headerText="News" itemKey="news" />
-              <PivotItem headerText="Announcements" itemKey="announcements" />
-            </Pivot>
+          {newsTitle && (<h3 className={styles.title}>{newsTitle}</h3>)}
+
+          <div className={styles.tabsAndHeader}>
+            <div className={styles.tabsContainer}>
+              <Pivot
+                selectedKey={activeTab}
+                onLinkClick={(item) => {
+                  const key = (item?.props.itemKey || 'all') as TabKey;
+                  setActiveTab(key);
+                }}
+                linkFormat="tabs">
+                <PivotItem headerText="All" itemKey="all" />
+                <PivotItem headerText="News" itemKey="news" />
+                <PivotItem headerText="Announcements" itemKey="announcements" />
+              </Pivot>
+            </div>
           </div>
-        </div>
 
-        <div className={styles.featuredList}>
-          {activeTab === 'news' && <NewsList context={context} />}
-          {activeTab === 'announcements' && <AnnouncementList context={context} />}
-          {activeTab === 'all' && <CombinedFeed context={context} maxItems={6} />}
+          <div className={styles.featuredList}>
+            {activeTab === 'news' && <NewsList context={context} />}
+            {activeTab === 'announcements' && <AnnouncementList context={context} />}
+            {activeTab === 'all' && <CombinedFeed context={context} maxItems={6} />}
+          </div>
+
         </div>
-      </div>
+      )}
 
       <div className={styles.panelsRow}>
-        <div className={styles.sidePanels}>
-          {showWelcome && (
+        {showWelcome && (
+          <div className={styles.sidePanels}>
             <div className={styles.panel}>
-              <WelcomeNewJoiners context={context} />
+              <WelcomeNewJoiners context={context} title={welcomeTitle} />
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className={styles.fullWidthPanel}>
-          <EventsCarousel context={context} excludedSitesCsv={excludedSites} />
-        </div>
+        {showEvents && (
+          <div className={styles.fullWidthPanel}>
+            <EventsCarousel context={context} excludedSitesCsv={excludedSites} title={eventsTitle} />
+          </div>
+        )}
       </div>
 
 
@@ -194,7 +201,7 @@ const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSite
 
       </div>
 
-    </div>
+    </div >
   );
 };
 
