@@ -32,6 +32,24 @@ const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSite
   const [userName, setUserName] = useState<string>('User');
   //const [featured, setFeatured] = useState<IFeaturedItem[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
+
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const [minHeight, setMinHeight] = useState<number | undefined>(undefined);
+  const newsRef = React.useRef<HTMLDivElement | null>(null);
+  const annRef = React.useRef<HTMLDivElement | null>(null);
+  const allRef = React.useRef<HTMLDivElement | null>(null);
+
+  const measureHeights = React.useCallback(() => {
+    try {
+      const h1 = newsRef.current ? newsRef.current.offsetHeight : 0;
+      const h2 = annRef.current ? annRef.current.offsetHeight : 0;
+      const h3 = allRef.current ? allRef.current.offsetHeight : 0;
+      const maxh = Math.max(h1, h2, h3, 220);
+      setMinHeight(maxh);
+    } catch (e) {
+      setMinHeight(320);
+    }
+  }, []);
   const [bannerImages, setBannerImages] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
 
@@ -96,6 +114,25 @@ const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSite
       return featured.filter(f => matchesTab(f, activeTab));
     }, [featured, activeTab]);
   */
+  // animate tab switches: fade out current, swap content, fade in
+  React.useEffect(() => {
+    // When the active tab changes, measure heights to avoid layout jumps,
+    // then clear the temporary minHeight after animations settle.
+    measureHeights();
+    let t1: number | undefined;
+    let t2: number | undefined;
+    t1 = window.setTimeout(() => {
+      // allow incoming content to render and then clear minHeight
+      t2 = window.setTimeout(() => {
+        setMinHeight(undefined);
+      }, 360);
+    }, 160);
+    return () => {
+      if (t1) clearTimeout(t1);
+      if (t2) clearTimeout(t2);
+    };
+  }, [activeTab, measureHeights]);
+
   return (
     <div className={styles.banner}>
       <div
@@ -169,10 +206,17 @@ const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSite
             </div>
           </div>
 
-          <div className={styles.featuredList}>
-            {activeTab === 'news' && <NewsList context={context} />}
-            {activeTab === 'announcements' && <AnnouncementList context={context} />}
-            {activeTab === 'all' && <CombinedFeed context={context} maxItems={6} />}
+          <div className={styles.tabContainer} ref={containerRef} style={minHeight ? { minHeight: `${minHeight}px` } : undefined}>
+            {/* Always render all layers (hidden/visible) and measure heights to avoid layout jumps */}
+            <div ref={newsRef} className={`${styles.tabLayer} ${activeTab === 'news' ? styles.visible : styles.hidden}`} aria-hidden={activeTab !== 'news'}>
+              <div className={styles.featuredList}><NewsList context={context} /></div>
+            </div>
+            <div ref={annRef} className={`${styles.tabLayer} ${activeTab === 'announcements' ? styles.visible : styles.hidden}`} aria-hidden={activeTab !== 'announcements'}>
+              <div className={styles.featuredList}><AnnouncementList context={context} /></div>
+            </div>
+            <div ref={allRef} className={`${styles.tabLayer} ${activeTab === 'all' ? styles.visible : styles.hidden}`} aria-hidden={activeTab !== 'all'}>
+              <div className={styles.featuredList}><CombinedFeed context={context} maxItems={6} /></div>
+            </div>
           </div>
 
         </div>

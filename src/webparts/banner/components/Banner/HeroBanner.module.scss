@@ -434,6 +434,54 @@
   align-items: flex-start; /* avoid equal height stretching */
 }
 
+/* Tab transition helpers: smooth fade/slide when switching between News/Announcements/All */
+.fadeOut {
+  transition: opacity 180ms ease, transform 180ms ease;
+  opacity: 0;
+  transform: translateY(6px);
+}
+.fadeIn {
+  transition: opacity 300ms ease, transform 300ms ease;
+  opacity: 1;
+  transform: translateY(0px);
+}
+
+/* Layer used to overlap content during transition */
+.tabContainer {
+  /* Do not absolutely position layers — keep them in the flow so their heights
+     contribute to layout and prevent overlapping of sections below. */
+  display: block;
+  position: relative;
+  min-height: 220px; /* fallback while JS measures */
+}
+.tabLayer {
+  position: relative; /* maintain flow */
+  width: 100%;
+  will-change: opacity, transform;
+  display: block;
+}
+
+/* ensure featuredList inside a layer participates in layout measurement */
+.tabLayer .featuredList {
+  position: relative;
+}
+
+/* visibility helpers: use visibility to preserve layout and opacity for smoothness */
+.tabLayer.hidden {
+  visibility: hidden; /* preserves layout space */
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 240ms ease, transform 240ms ease, visibility 0ms linear 240ms;
+}
+.tabLayer.visible {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity 320ms ease, transform 320ms ease;
+}
+
 /* Featured card reference (unchanged) */
 .featuredCard {
   box-sizing: border-box;
