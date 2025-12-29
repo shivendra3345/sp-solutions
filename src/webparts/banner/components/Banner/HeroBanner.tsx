@@ -11,6 +11,7 @@ import {
 import styles from './HeroBanner.module.scss';
 import type { IBannerProps } from '../IBannerProps';
 import WelcomeNewJoiners from './WelcomeNewJoiners';
+import EventsCarousel from './EventsCarousel';
 import InfoTile from './InfoTile';
 import DataService, { } from '../../services/DataService';
 import NewsList from '../news/NewsList';
@@ -27,7 +28,7 @@ interface IBannerItem {
 
 type TabKey = 'all' | 'news' | 'announcements';
 
-const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome }) => {
+const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSites }) => {
   const [userName, setUserName] = useState<string>('User');
   //const [featured, setFeatured] = useState<IFeaturedItem[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
@@ -172,16 +173,17 @@ const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome }) => {
         </div>
       </div>
 
-      <div className={styles.sidePanels}>
-        {showWelcome && (
-          <div className={styles.panel}>
-            <WelcomeNewJoiners context={context} />
-          </div>
-        )}
+      <div className={styles.panelsRow}>
+        <div className={styles.sidePanels}>
+          {showWelcome && (
+            <div className={styles.panel}>
+              <WelcomeNewJoiners context={context} />
+            </div>
+          )}
+        </div>
 
-        <div className={styles.panel}>
-          <h3>Other Component</h3>
-          <div>Replace this area with your other component.</div>
+        <div className={styles.fullWidthPanel}>
+          <EventsCarousel context={context} excludedSitesCsv={excludedSites} />
         </div>
       </div>
 

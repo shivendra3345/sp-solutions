@@ -18,6 +18,8 @@ export interface IBannerWebPartProps {
   description: string;
   /** Show the welcome panel for new joiners */
   showWelcome?: boolean;
+  /** Comma-separated list of site URLs to exclude from events */
+  excludedSites?: string;
   context: WebPartContext;
 }
 
@@ -36,7 +38,8 @@ export default class BannerWebPart extends BaseClientSideWebPart<IBannerWebPartP
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
         userDisplayName: this.context.pageContext.user.displayName,
         context: this.context,
-        showWelcome: this.properties.showWelcome !== undefined ? this.properties.showWelcome : true
+        showWelcome: this.properties.showWelcome !== undefined ? this.properties.showWelcome : true,
+        excludedSites: this.properties.excludedSites || ''
       }
     );
 
@@ -123,6 +126,10 @@ export default class BannerWebPart extends BaseClientSideWebPart<IBannerWebPartP
                   label: 'Show Welcome Panel',
                   onText: 'Shown',
                   offText: 'Hidden'
+                })
+                ,
+                PropertyPaneTextField('excludedSites', {
+                  label: 'Exclude Sites (comma-separated URLs or serverRelativePaths)'
                 })
               ]
             }
