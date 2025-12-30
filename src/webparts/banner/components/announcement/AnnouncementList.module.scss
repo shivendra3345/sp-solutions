@@ -34,6 +34,38 @@
   border-radius: 6px;
 }
 
+.imageWrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.cardOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.48) 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transform: translateY(8px);
+  opacity: 0;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.overlayTitle { font-weight: 600; font-size: 14px; color: #fff; }
+.overlayMeta { font-size: 12px; color: rgba(255,255,255,0.85); }
+
+.announcementCard:hover .cardOverlay,
+.announcementCard:focus-within .cardOverlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .announcementTitle {
   margin: 0;
   font-size: 16px;
@@ -120,4 +152,39 @@
   font-size: 14px;
   color: #333;
   line-height: 1.5;
+}
+
+/* Ensure Fluent UI Dialogs render above other elements and are not clipped by parent overflow. */
+:global(.ms-Dialog) {
+  position: fixed !important;
+  left: 50% !important;
+  top: 12% !important;
+  transform: translateX(-50%) !important;
+  z-index: 100000 !important;
+}
+:global(.ms-Dialog-main) {
+  max-width: 980px !important;
+  width: calc(100% - 40px) !important;
+  max-height: calc(100vh - 120px) !important;
+  overflow: hidden !important;
+}
+:global(.ms-Dialog-overlay) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+}
+/* Make dialog content scrollable while keeping header/footer visible */
+:global(.ms-Dialog-main .ms-Dialog-content) {
+  overflow-y: auto !important;
+  max-height: calc(100vh - 220px) !important;
+}
+/* Keep dialog footer visible by making actions/footer sticky within the dialog */
+:global(.ms-Dialog-main .ms-Dialog-actions),
+:global(.ms-Dialog-main .ms-Dialog-footer) {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: #fff !important;
+  z-index: 1200 !important;
+  padding-top: 8px !important;
+  box-shadow: 0 -6px 12px rgba(0,0,0,0.06);
 }

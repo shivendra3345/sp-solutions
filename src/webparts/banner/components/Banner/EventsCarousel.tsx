@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState, useRef } from 'react';
+import { Dialog, DialogType, DialogFooter } from '@fluentui/react/lib/Dialog';
+import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 import { SPHttpClient } from '@microsoft/sp-http';
 import styles from './EventsCarousel.module.scss';
 
@@ -12,6 +14,8 @@ interface IEventItem {
     EndDate?: string;
     Summary?: string;
     Banner?: string;
+    ListId?: string;
+    ItemId?: number;
 }
 
 const RANDOM_BANNERS = [
@@ -24,6 +28,23 @@ const EventsCarousel: React.FC<{ context: any; excludedSitesCsv?: string; exclud
     const [items, setItems] = useState<IEventItem[]>([]);
     const [index, setIndex] = useState(0);
     const mounted = useRef(true);
+    const [selectedEvent, setSelectedEvent] = useState<IEventItem | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const MODAL_HOST_ID = 'sp-solutions-modal-host';
+
+    // Ensure a top-level modal host exists so Fluent UI Dialog/Layer renders outside any transformed/overflowed ancestors
+    React.useEffect(() => {
+        if (typeof document === 'undefined') return;
+        let host = document.getElementById(MODAL_HOST_ID);
+        if (!host) {
+            host = document.createElement('div');
+            host.id = MODAL_HOST_ID;
+            document.body.appendChild(host);
+        }
+        return () => {
+            // keep host — don't remove it to avoid interfering with other components
+        };
+    }, []);
 
     useEffect(() => { return () => { mounted.current = false; }; }, []);
 
@@ -76,6 +97,10 @@ const EventsCarousel: React.FC<{ context: any; excludedSitesCsv?: string; exclud
                 console.debug('EventsCarousel: discovered webUrls count', webUrls.length, webUrls.slice(0, 20));
 
                 const events: IEventItem[] = [];
+                // determine origin for building absolute URLs (fallback to web absoluteUrl)
+                const origin = (typeof window !== 'undefined' && window.location && window.location.origin)
+                    ? window.location.origin
+                    : (new URL(context.pageContext.web.absoluteUrl)).origin;
                 const seen = new Set<string>();
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -240,11 +265,10 @@ const EventsCarousel: React.FC<{ context: any; excludedSitesCsv?: string; exclud
                                         if (seen.has(key)) continue;
                                         seen.add(key);
 
-                                        const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : (new URL(context.pageContext.web.absoluteUrl)).origin;
-                                        const fileRef = it.FileRef || '';
-                                        const fullPathCandidate = fileRef && fileRef.indexOf('/') === 0 ? `${origin}${fileRef}` : (fileRef || '');
+                                        // Prefer the list item display form URL so clicking "Open event" navigates
+                                        // to the event page instead of attempting to download an attachment.
                                         const displayUrl = `${webUrl}/_layouts/15/listform.aspx?PageType=4&ListId=${list.Id}&ID=${it.ID}`;
-                                        const finalPath = fullPathCandidate && fullPathCandidate.length > 0 ? fullPathCandidate : displayUrl;
+                                        const finalPath = displayUrl;
 
                                         const evt: IEventItem = {
                                             Title: it.Title || 'Untitled',
@@ -255,6 +279,8 @@ const EventsCarousel: React.FC<{ context: any; excludedSitesCsv?: string; exclud
                                             EndDate: it.EndDate,
                                             Summary: undefined,
                                             Banner: undefined
+                                            , ListId: list.Id,
+                                            ItemId: it.ID || it.Id || undefined
                                         };
 
                                         // try to fetch first image attachment for the item (if any)
@@ -336,7 +362,10 @@ const EventsCarousel: React.FC<{ context: any; excludedSitesCsv?: string; exclud
                 <div className={styles.slides}>
                     {visible.length === 0 && (<div className={styles.empty}>No upcoming events</div>)}
                     {visible.map((it, i) => (
-                        <a key={`${it.Path}-${i}`} className={styles.slide} href={it.Path || it.SiteUrl} target="_blank" rel="noreferrer">
+                        <div key={`${it.Path || it.Title}-${i}`} className={styles.slide} role="button" tabIndex={0}
+                            onClick={(e) => { e.preventDefault(); setSelectedEvent(it); setIsModalOpen(true); }}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedEvent(it); setIsModalOpen(true); } }}
+                        >
                             <div className={styles.banner} style={{ backgroundImage: `url('${it.Banner || randomBanner(i)}')` }} />
                             <div className={styles.meta}>
                                 <h4 className={styles.title}>{it.Title}</h4>
@@ -344,11 +373,51 @@ const EventsCarousel: React.FC<{ context: any; excludedSitesCsv?: string; exclud
                                 <div className={styles.info}>{it.EventDate ? (new Date(it.EventDate)).toLocaleString() : ''}{it.EndDate ? ` - ${new Date(it.EndDate).toLocaleString()}` : ''}</div>
                                 {it.Summary && <p className={styles.summary}>{it.Summary.replace(/(<([^>]+)>)/gi, '').slice(0, 220)}</p>}
                             </div>
-                        </a>
+                        </div>
                     ))}
                 </div>
                 <button className={styles.arrowRight} aria-label="Next" onClick={next}>›</button>
             </div>
+            {/* Event details dialog */}
+            <Dialog
+                hidden={!isModalOpen}
+                onDismiss={() => { setIsModalOpen(false); setSelectedEvent(null); }}
+                dialogContentProps={{
+                    type: DialogType.largeHeader,
+                    title: selectedEvent ? selectedEvent.Title : 'Event Details',
+                    subText: selectedEvent && selectedEvent.EventDate ? `${new Date(selectedEvent.EventDate).toLocaleString()}${selectedEvent.EndDate ? ` - ${new Date(selectedEvent.EndDate).toLocaleString()}` : ''}` : undefined
+                }}
+                modalProps={{ isBlocking: false, layerProps: { hostId: MODAL_HOST_ID } }}
+            >
+                <div>
+                    {selectedEvent && (
+                        <div>
+                            {selectedEvent.Banner && <img src={selectedEvent.Banner} alt={selectedEvent.Title} className={styles.modalImage} />}
+                            <div className={styles.modalBody}>
+                                <div><strong>By:</strong> {selectedEvent.Author || 'Unknown'}</div>
+                                {selectedEvent.Summary && <div style={{ marginTop: 8 }} dangerouslySetInnerHTML={{ __html: selectedEvent.Summary }} />}
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <DialogFooter>
+                    <PrimaryButton onClick={() => {
+                        if (!selectedEvent) return;
+                        // Prefer constructing a display form URL from SiteUrl + ListId + ItemId
+                        try {
+                            let openUrl = selectedEvent.Path;
+                            if (selectedEvent.SiteUrl && selectedEvent.ListId && selectedEvent.ItemId) {
+                                openUrl = `${selectedEvent.SiteUrl}/_layouts/15/listform.aspx?PageType=4&ListId=${selectedEvent.ListId}&ID=${selectedEvent.ItemId}`;
+                            }
+                            console.debug('EventsCarousel: opening event URL', openUrl, selectedEvent);
+                            window.open(openUrl, '_blank');
+                        } catch (e) {
+                            console.error('EventsCarousel: failed to open event url', e, selectedEvent);
+                        }
+                    }} text="Open event" />
+                    <DefaultButton onClick={() => { setIsModalOpen(false); setSelectedEvent(null); }} text="Close" />
+                </DialogFooter>
+            </Dialog>
         </div>
     );
 };

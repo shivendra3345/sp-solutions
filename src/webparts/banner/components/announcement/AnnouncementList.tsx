@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { Dialog, DialogType, DialogFooter } from '@fluentui/react/lib/Dialog';
+import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 import styles from './AnnouncementList.module.scss';
 
@@ -56,12 +58,18 @@ const AnnouncementList: React.FC<{ context: any }> = ({ context }) => {
                         onClick={() => setSelected(item)}
                         onKeyDown={(e) => e.key === 'Enter' && setSelected(item)}
                     >
-                        <img
-                            src={getImageUrl(item)}
-                            alt={item.Title}
-                            className={styles.announcementImage}
-                            loading="lazy"
-                        />
+                        <div className={styles.imageWrap}>
+                            <img
+                                src={getImageUrl(item)}
+                                alt={item.Title}
+                                className={styles.announcementImage}
+                                loading="lazy"
+                            />
+                            <div className={styles.cardOverlay} aria-hidden="true">
+                                <div className={styles.overlayTitle}>{item.Title}</div>
+                                <div className={styles.overlayMeta}>{new Date(item.Created).toLocaleDateString()}</div>
+                            </div>
+                        </div>
                         <h3 className={styles.announcementTitle}>{item.Title}</h3>
                         {item.Content && (
                             <p className={styles.announcementExcerpt}>
@@ -78,23 +86,18 @@ const AnnouncementList: React.FC<{ context: any }> = ({ context }) => {
             )}
 
             {selected && (
-                <div className={styles.modalOverlay} onClick={() => setSelected(null)}>
-                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                        <button
-                            className={styles.closeButton}
-                            onClick={() => setSelected(null)}
-                            aria-label="Close"
-                        >
-                            ×
-                        </button>
-
-                        <div className={styles.modalHeader}>
-                            <h2 className={styles.modalTitle}>{selected.Title}</h2>
-                            <p className={styles.modalMeta}>
-                                {new Date(selected.Created).toLocaleDateString()}
-                            </p>
-                        </div>
-
+                <Dialog
+                    hidden={!selected}
+                    onDismiss={() => setSelected(null)}
+                    dialogContentProps={{
+                        type: DialogType.largeHeader,
+                        title: selected ? selected.Title : 'Announcement',
+                        subText: selected ? new Date(selected.Created).toLocaleDateString() : undefined
+                    }}
+                    modalProps={{ isBlocking: false, layerProps: { hostId: 'sp-solutions-modal-host' } }}
+                >
+                    <div>
+                        <button className={styles.closeButton} onClick={() => setSelected(null)} aria-label="Close">×</button>
                         <img
                             src={getImageUrl(selected)}
                             alt={selected.Title}
@@ -107,7 +110,15 @@ const AnnouncementList: React.FC<{ context: any }> = ({ context }) => {
                             </div>
                         )}
                     </div>
-                </div>
+                    <DialogFooter>
+                        <PrimaryButton onClick={() => {
+                            if (!selected) return;
+                            const img = getImageUrl(selected);
+                            if (img) window.open(img, '_blank');
+                        }} text="Open image" />
+                        <DefaultButton onClick={() => setSelected(null)} text="Close" />
+                    </DialogFooter>
+                </Dialog>
             )}
         </>
     );

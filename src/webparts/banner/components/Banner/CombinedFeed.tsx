@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { SPHttpClient } from '@microsoft/sp-http';
+import { Dialog, DialogType, DialogFooter } from '@fluentui/react/lib/Dialog';
+import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 import styles from '../news/NewsList.module.scss';
 
 interface IFeedItem {
@@ -19,6 +21,18 @@ interface IFeedItem {
 const CombinedFeed: React.FC<{ context: any; maxItems?: number }> = ({ context, maxItems = 6 }) => {
     const [items, setItems] = useState<IFeedItem[]>([]);
     const [selected, setSelected] = useState<IFeedItem | null>(null);
+    const MODAL_HOST_ID = 'sp-solutions-modal-host';
+
+    // ensure modal host exists (HeroBanner also creates it, but be defensive)
+    React.useEffect(() => {
+        if (typeof document === 'undefined') return;
+        let host = document.getElementById(MODAL_HOST_ID);
+        if (!host) {
+            host = document.createElement('div');
+            host.id = MODAL_HOST_ID;
+            document.body.appendChild(host);
+        }
+    }, []);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -141,15 +155,22 @@ const CombinedFeed: React.FC<{ context: any; maxItems?: number }> = ({ context, 
                 ))
             )}
 
-            {selected && (
-                <div className={styles.modalOverlay} onClick={() => setSelected(null)}>
-                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <Dialog
+                hidden={!selected}
+                onDismiss={() => setSelected(null)}
+                dialogContentProps={{
+                    type: DialogType.normal,
+                    title: selected ? selected.Title : undefined,
+                    subText: selected ? new Date(selected.Created).toLocaleDateString() : undefined
+                }}
+                modalProps={{
+                    isBlocking: false,
+                    layerProps: { hostId: MODAL_HOST_ID }
+                }}
+            >
+                {selected && (
+                    <div>
                         <button className={styles.closeButton} onClick={() => setSelected(null)} aria-label="Close">×</button>
-                        <div className={styles.modalHeader}>
-                            <h2 className={styles.modalTitle}>{selected.Title}</h2>
-                            <p className={styles.modalMeta}>{new Date(selected.Created).toLocaleDateString()}</p>
-                        </div>
-
                         {selected.source === 'news' && (
                             <>
                                 {selected.FileRef || selected.AbsoluteUrl ? (
@@ -173,9 +194,22 @@ const CombinedFeed: React.FC<{ context: any; maxItems?: number }> = ({ context, 
                         {selected.source === 'announcement' && selected.Description && (
                             <div className={styles.modalBody}><p>{selected.Description}</p></div>
                         )}
+
+                        <DialogFooter>
+                            <PrimaryButton
+                                text="Open page"
+                                onClick={() => {
+                                    const href = selected.source === 'news'
+                                        ? (selected.FileRef || selected.AbsoluteUrl)
+                                        : (selected.AttachmentUrl || selected.FileRef || selected.AbsoluteUrl);
+                                    if (href) window.open(href, '_blank');
+                                }}
+                            />
+                            <DefaultButton text="Close" onClick={() => setSelected(null)} />
+                        </DialogFooter>
                     </div>
-                </div>
-            )}
+                )}
+            </Dialog>
         </div>
     );
 };

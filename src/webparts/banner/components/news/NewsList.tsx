@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
+import { Dialog, DialogType, DialogFooter } from '@fluentui/react/lib/Dialog';
+import { PrimaryButton, DefaultButton } from '@fluentui/react/lib/Button';
 import styles from './NewsList.module.scss';
 
 interface IAuthor { Title?: string; }
@@ -79,12 +81,18 @@ const NewsList: React.FC<{ context: any }> = ({ context }) => {
                         onKeyDown={(e) => e.key === 'Enter' && handleCardClick(item)}
                     >
                         {extractThumbnail(item) && (
-                            <img
-                                src={extractThumbnail(item)!}
-                                alt={item.Title}
-                                className={styles.newsImage}
-                                loading="lazy"
-                            />
+                            <div className={styles.imageWrap}>
+                                <img
+                                    src={extractThumbnail(item)!}
+                                    alt={item.Title}
+                                    className={styles.newsImage}
+                                    loading="lazy"
+                                />
+                                <div className={styles.cardOverlay} aria-hidden="true">
+                                    <div className={styles.overlayTitle}>{item.Title}</div>
+                                    <div className={styles.overlayMeta}>By {item.Author?.Title || 'Unknown'}</div>
+                                </div>
+                            </div>
                         )}
                         <h3 className={styles.newsTitle}>{item.Title}</h3>
                         {item.Description && (
@@ -102,30 +110,33 @@ const NewsList: React.FC<{ context: any }> = ({ context }) => {
             )}
 
             {selectedNews && iframeSrc && (
-                <div className={styles.modalOverlay} onClick={() => setSelectedNews(null)}>
-                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                        <button
-                            className={styles.closeButton}
-                            onClick={() => setSelectedNews(null)}
-                            aria-label="Close"
-                        >
-                            ×
-                        </button>
-
-                        <div className={styles.modalHeader}>
-                            <h2 className={styles.modalTitle}>{selectedNews.Title}</h2>
-                            <p className={styles.modalMeta}>
-                                {new Date(selectedNews.Created).toLocaleDateString()}
-                            </p>
-                        </div>
-
+                <Dialog
+                    hidden={!selectedNews}
+                    onDismiss={() => setSelectedNews(null)}
+                    dialogContentProps={{
+                        type: DialogType.largeHeader,
+                        title: selectedNews ? selectedNews.Title : 'News',
+                        subText: selectedNews ? new Date(selectedNews.Created).toLocaleDateString() : undefined
+                    }}
+                    modalProps={{ isBlocking: false, layerProps: { hostId: 'sp-solutions-modal-host' } }}
+                >
+                    <div>
+                        <button className={styles.closeButton} onClick={() => setSelectedNews(null)} aria-label="Close">×</button>
                         <iframe
                             src={iframeSrc}
                             className={styles.newsIframe}
                             title={selectedNews.Title}
                         />
                     </div>
-                </div>
+                    <DialogFooter>
+                        <PrimaryButton onClick={() => {
+                            if (!selectedNews) return;
+                            const pageUrl = selectedNews.FileRef || selectedNews.AbsoluteUrl;
+                            if (pageUrl) window.open(pageUrl, '_blank');
+                        }} text="Open page" />
+                        <DefaultButton onClick={() => setSelectedNews(null)} text="Close" />
+                    </DialogFooter>
+                </Dialog>
             )}
         </div>
     );

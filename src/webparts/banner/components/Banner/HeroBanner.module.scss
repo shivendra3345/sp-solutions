@@ -346,13 +346,11 @@
 }
 /* Tabs + section header (placed before featured list) */
 .tabsAndHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  /* removed display:flex to avoid left-alignment; layout now relies on absolute-centering of the tabs container */
   max-width: 1200px;
   margin: 18px auto 8px;
   padding: 0 20px;
+  position: relative; /* allow absolute-centering of the tabs container */
 }
 
 /* Section titles used above content areas (news, events, welcome) */
@@ -364,15 +362,27 @@
   text-align: left;
 }
 
-.tabsContainer {
+.tabContainer {
   flex: 1 1 auto;
   min-width: 240px;
+  /* center the Pivot (tab list) horizontally inside the header */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* reduce default reserved space between tabs and panels; JS will size where available */
+  min-height: 12px;
+  /* center visually by absolute positioning within .tabsAndHeader on wide screens */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Target Fluent UI Pivot classes */
 .tabsContainer :global(.ms-Pivot) {
   background: transparent;
   box-shadow: none;
+  display: inline-flex; /* allow centering container to center the pivot */
+  align-items: center;
 }
 
 .tabsContainer :global(.ms-Pivot-link) {
@@ -398,6 +408,11 @@
 .sectionHeader {
   flex: 0 0 auto;
   text-align: right;
+  /* keep the right-side header visually on the right when .tabsAndHeader is not flex */
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .sectionHeader h2 {
@@ -425,11 +440,25 @@
   .sectionHeader {
     text-align: left;
   }
+  /* revert absolute centering on small screens so layout stacks naturally */
+  .tabsContainer {
+    position: relative;
+    left: auto;
+    transform: none;
+    justify-content: flex-start;
+  }
+  /* responsive: restore normal flow for sectionHeader */
+  .sectionHeader {
+    position: static;
+    right: auto;
+    top: auto;
+    transform: none;
+  }
 }
 .featuredList {
   display: flex;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 8px; /* reduce vertical gap between tabs/header and slides */
   flex-wrap: wrap;
   align-items: flex-start; /* avoid equal height stretching */
 }
@@ -455,7 +484,7 @@
   min-height: 220px; /* fallback while JS measures */
 }
 .tabLayer {
-  position: relative; /* maintain flow */
+  position: relative; /* default: visible layers remain in flow */
   width: 100%;
   will-change: opacity, transform;
   display: block;
@@ -468,7 +497,12 @@
 
 /* visibility helpers: use visibility to preserve layout and opacity for smoothness */
 .tabLayer.hidden {
-  visibility: hidden; /* preserves layout space */
+  /* remove hidden layers from the document flow so they don't add vertical space */
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  visibility: hidden;
   opacity: 0;
   transform: translateY(6px);
   pointer-events: none;

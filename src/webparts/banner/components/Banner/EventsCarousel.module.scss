@@ -24,6 +24,7 @@
   color: inherit;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   box-sizing: border-box;
+  cursor: pointer;
 }
 .banner {
   height: 140px;
@@ -66,6 +67,44 @@
   .arrowLeft, .arrowRight { width: 36px; height: 36px; left: 6px; right: 6px; }
 }
 .empty { padding: 14px; color: #666 }
+
+/* Modal dialog helpers for event details */
+.modalImage {
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+  object-fit: cover;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  display: block;
+}
+.modalBody {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.slide:focus {
+  outline: 3px solid rgba(15,106,180,0.14);
+  outline-offset: 2px;
+}
+/* Ensure Fluent UI Dialogs render above other elements and are not clipped by parent overflow. */
+:global(.ms-Dialog) {
+  position: fixed !important;
+  left: 50% !important;
+  top: 18% !important;
+  transform: translateX(-50%) !important;
+  z-index: 100000 !important;
+}
+:global(.ms-Dialog-main) {
+  max-width: 720px !important;
+  width: calc(100% - 40px) !important;
+}
+:global(.ms-Dialog-overlay) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+}
 
 @media (max-width: 1000px) {
   .slides { grid-template-columns: repeat(2, 1fr); }
