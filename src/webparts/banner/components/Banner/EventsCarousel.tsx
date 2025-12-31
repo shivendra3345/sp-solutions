@@ -270,11 +270,24 @@ const EventsCarousel: React.FC<{ context: any; excludedSitesCsv?: string; exclud
                                         const displayUrl = `${webUrl}/_layouts/15/listform.aspx?PageType=4&ListId=${list.Id}&ID=${it.ID}`;
                                         const finalPath = displayUrl;
 
+                                        const extractAuthor = (src: any): string | undefined => {
+                                            if (!src) return undefined;
+                                            if (src.Author && typeof src.Author === 'object' && src.Author.Title) return src.Author.Title;
+                                            if (src.Author && typeof src.Author === 'string') {
+                                                const m = src.Author.match(/#(.*)$/);
+                                                if (m && m[1]) return m[1];
+                                                return src.Author;
+                                            }
+                                            if (src.FieldValuesAsText && src.FieldValuesAsText.Author) return src.FieldValuesAsText.Author;
+                                            if (src['AuthorId']) return String(src['AuthorId']);
+                                            return undefined;
+                                        };
+
                                         const evt: IEventItem = {
                                             Title: it.Title || 'Untitled',
                                             Path: finalPath,
                                             SiteUrl: webUrl,
-                                            Author: it.Author && it.Author.Title ? it.Author.Title : undefined,
+                                            Author: extractAuthor(it),
                                             EventDate: it.EventDate,
                                             EndDate: it.EndDate,
                                             Summary: undefined,

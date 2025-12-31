@@ -53,6 +53,19 @@ const NewsList: React.FC<{ context: any }> = ({ context }) => {
         } catch { return undefined; }
     };
 
+    const getAuthorName = (item: any): string | undefined => {
+        if (!item) return undefined;
+        if (item.Author && typeof item.Author === 'object' && item.Author.Title) return item.Author.Title;
+        if (item.Author && typeof item.Author === 'string') {
+            const m = item.Author.match(/#(.*)$/);
+            if (m && m[1]) return m[1];
+            return item.Author;
+        }
+        if (item.FieldValuesAsText && item.FieldValuesAsText.Author) return item.FieldValuesAsText.Author;
+        if (item['AuthorId']) return String(item['AuthorId']);
+        return undefined;
+    };
+
     const iframeSrc = useMemo(() => {
         if (!selectedNews) return '';
         const pageUrl = selectedNews.FileRef || selectedNews.AbsoluteUrl;
@@ -90,7 +103,7 @@ const NewsList: React.FC<{ context: any }> = ({ context }) => {
                                 />
                                 <div className={styles.cardOverlay} aria-hidden="true">
                                     <div className={styles.overlayTitle}>{item.Title}</div>
-                                    <div className={styles.overlayMeta}>By {item.Author?.Title || 'Unknown'}</div>
+                                    <div className={styles.overlayMeta}>By {getAuthorName(item) || 'Unknown'}</div>
                                 </div>
                             </div>
                         )}
@@ -103,7 +116,7 @@ const NewsList: React.FC<{ context: any }> = ({ context }) => {
                             </p>
                         )}
                         <p className={styles.newsMeta}>
-                            By {item.Author?.Title || 'Unknown'} on {new Date(item.Created).toLocaleDateString()}
+                            By {getAuthorName(item) || 'Unknown'} on {new Date(item.Created).toLocaleDateString()}
                         </p>
                     </div>
                 ))

@@ -38,8 +38,8 @@ const CombinedFeed: React.FC<{ context: any; maxItems?: number }> = ({ context, 
         const fetchAll = async () => {
             try {
                 // News (sitepages/pages promoted state)
-                const newsUrl = `${context.pageContext.web.absoluteUrl}/_api/sitepages/pages?$filter=PromotedState eq 2&$select=Id,Title,Created,FileRef,AbsoluteUrl,Description,CanvasContent1&$orderby=Created desc&$top=${maxItems}`;
-                const annUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('Announcement')/items?$select=Id,Title,Content,Created,AttachmentFiles&$expand=AttachmentFiles&$orderby=Created desc&$top=${maxItems}`;
+                const newsUrl = `${context.pageContext.web.absoluteUrl}/_api/sitepages/pages?$filter=PromotedState eq 2&$select=Id,Title,Created,FileRef,AbsoluteUrl,Description,CanvasContent1,Author/Title&$expand=Author&$orderby=Created desc&$top=${maxItems}`;
+                const annUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('Announcement')/items?$select=Id,Title,Content,Created,AttachmentFiles,Author/Title&$expand=AttachmentFiles,Author&$orderby=Created desc&$top=${maxItems}`;
 
                 const [newsRes, annRes] = await Promise.all([
                     context.spHttpClient.get(newsUrl, SPHttpClient.configurations.v1),
@@ -48,6 +48,21 @@ const CombinedFeed: React.FC<{ context: any; maxItems?: number }> = ({ context, 
 
                 const newsJson = await newsRes.json();
                 const annJson = await annRes.json();
+
+                const getAuthor = (obj: any): string | undefined => {
+                    if (!obj) return undefined;
+                    if (obj.Author && typeof obj.Author === 'object' && obj.Author.Title) return obj.Author.Title;
+                    if (obj.Author && typeof obj.Author === 'string') {
+                        // sometimes SharePoint returns '1;#Firstname Lastname'
+                        const m = obj.Author.match(/#(.*)$/);
+                        if (m && m[1]) return m[1];
+                        return obj.Author;
+                    }
+                    if (obj.FieldValuesAsText && obj.FieldValuesAsText.Author) return obj.FieldValuesAsText.Author;
+                    if (obj['AuthorId']) return String(obj['AuthorId']);
+                    if (obj.CreatedBy && obj.CreatedBy.Title) return obj.CreatedBy.Title;
+                    return undefined;
+                };
 
                 const newsItems: IFeedItem[] = (newsJson.value || newsJson.d?.results || []).map((n: any) => ({
                     source: 'news',
@@ -58,7 +73,8 @@ const CombinedFeed: React.FC<{ context: any; maxItems?: number }> = ({ context, 
                     FileRef: n.FileRef,
                     AbsoluteUrl: n.AbsoluteUrl
                     ,
-                    CanvasContent1: n.CanvasContent1
+                    CanvasContent1: n.CanvasContent1,
+                    Author: getAuthor(n)
                 }));
 
                 const annItems: IFeedItem[] = (annJson.value || annJson.d?.results || []).map((a: any) => ({
@@ -67,7 +83,8 @@ const CombinedFeed: React.FC<{ context: any; maxItems?: number }> = ({ context, 
                     Title: a.Title,
                     Created: a.Created,
                     Description: a.Content,
-                    AttachmentUrl: (a.AttachmentFiles && a.AttachmentFiles.length > 0) ? a.AttachmentFiles[0].ServerRelativeUrl : undefined
+                    AttachmentUrl: (a.AttachmentFiles && a.AttachmentFiles.length > 0) ? a.AttachmentFiles[0].ServerRelativeUrl : undefined,
+                    Author: getAuthor(a)
                 }));
 
                 const merged = [...newsItems, ...annItems]

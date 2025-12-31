@@ -33,19 +33,51 @@ export default class TopNavFooterApplicationCustomizer
   @override
   public onInit(): Promise<void> {
     Log.info(LOG_SOURCE, `Initialized TopNavFooterApplicationCustomizer`);
+    // If the user previously disabled the header via the Banner web part, persist
+    // that preference in localStorage. Read it here and skip initial injection
+    // if the stored preference is 'false'.
+    let preferEnabled: boolean = true;
+    try {
+      const pref = (typeof window !== 'undefined' && localStorage.getItem('sp-solutions-header-enabled')) || undefined;
+      if (pref === 'false') preferEnabled = false;
+    } catch (e) { /* ignore */ }
 
-    // Inject critical hide style as early as possible to avoid header flash
-    this._injectHideStyleEarly();
+    if (!preferEnabled) {
+      try { console.debug('TopNavFooter: user preference indicates header extension disabled on load; skipping injection'); } catch (e) { }
+      // ensure any previous injected UI is removed
+      try { this._disableCustomHeader(); } catch (e) { /* ignore */ }
+    } else {
+      // Inject critical hide style as early as possible to avoid header flash
+      this._injectHideStyleEarly();
 
-    // Render into Top placeholder as fallback
-    this.context.placeholderProvider.changedEvent.add(this, this._renderPlaceholders.bind(this));
-    this._renderPlaceholders();
+      // Render into Top placeholder as fallback
+      this.context.placeholderProvider.changedEvent.add(this, this._renderPlaceholders.bind(this));
+      this._renderPlaceholders();
 
-    // Create footer container appended to body and render footer
-    this._createFooterContainerAndRender();
+      // Create footer container appended to body and render footer
+      this._createFooterContainerAndRender();
 
-    // Create TopNav element and attempt to insert after search box
-    this._createAndInsertTopNavAfterSearch();
+      // Create TopNav element and attempt to insert after search box
+      this._createAndInsertTopNavAfterSearch();
+    }
+
+    // Listen for header toggle events from the Banner web part so we can show/hide
+    // the custom header and restore the hub header when disabled.
+    try {
+      window.addEventListener('sp-solutions-header-toggle', (ev: any) => {
+        const enabled = !!(ev && ev.detail && ev.detail.enabled);
+        try { console.debug('TopNavFooter: received sp-solutions-header-toggle ->', enabled); } catch (e) { }
+        if (enabled) {
+          // re-enable custom header
+          this._enableCustomHeader();
+        } else {
+          // disable custom header and restore original header elements
+          this._disableCustomHeader();
+        }
+      });
+    } catch (e) {
+      // ignore if events fail
+    }
 
     return Promise.resolve();
   }
@@ -83,7 +115,7 @@ export default class TopNavFooterApplicationCustomizer
     //   html: this.properties.footerHtml || ''
     // };
 
-  //  ReactDOM.render(React.createElement(FooterInjector, footerProps), container);
+    //  ReactDOM.render(React.createElement(FooterInjector, footerProps), container);
   }
 
   private _createAndInsertTopNavAfterSearch(): void {
@@ -103,7 +135,7 @@ export default class TopNavFooterApplicationCustomizer
       'div[data-automation-id="SearchBox"]',
       'div[data-automation-id="SearchBoxContainer"]',
       '#SearchBoxContainer',
-     // '.ms-SearchBox',
+      // '.ms-SearchBox',
       'div[role="search"]',
       'input[title="Search"]',
       '#suiteNavBox'
@@ -140,7 +172,7 @@ export default class TopNavFooterApplicationCustomizer
           insertAfter(searchEl, container);
 
           this._applyHideClassToHeaderElements();
-        //  this._removeHideStyleEarly();
+          //  this._removeHideStyleEarly();
           this._startHeaderReapplyObserver();
 
           return true;
@@ -168,7 +200,7 @@ export default class TopNavFooterApplicationCustomizer
         this._observer.disconnect();
         this._observer = null;
         if (!document.getElementById(this._insertionContainerId)) {
-         // this._removeHideStyleEarly();
+          // this._removeHideStyleEarly();
           // eslint-disable-next-line no-console
           console.warn('TopNavFooter: stopped observing DOM for search element (timeout) — removed hide style');
         }
@@ -217,6 +249,105 @@ export default class TopNavFooterApplicationCustomizer
 
     // eslint-disable-next-line no-console
     console.info('TopNavFooter: injected critical hide style');
+  }
+
+  private _removeHideStyleEarly(): void {
+    const style = document.getElementById(this._criticalHideStyleId);
+    if (style) {
+      style.remove();
+      // eslint-disable-next-line no-console
+      console.info('TopNavFooter: removed critical hide style');
+    }
+  }
+
+  private _disableCustomHeader(): void {
+    try {
+      console.debug('TopNavFooter: performing forced disable cleanup');
+    } catch (e) { }
+
+    // Unmount and remove inserted container if present
+    const inserted = document.getElementById(this._insertionContainerId);
+    if (inserted) {
+      try { ReactDOM.unmountComponentAtNode(inserted); } catch (e) { /* ignore */ }
+      inserted.remove();
+      try { console.debug('TopNavFooter: removed insertion container', this._insertionContainerId); } catch (e) { }
+    }
+
+    // Remove footer container
+    const footerContainer = document.getElementById(this._footerContainerId);
+    if (footerContainer) {
+      try { ReactDOM.unmountComponentAtNode(footerContainer); } catch (e) { /* ignore */ }
+      footerContainer.remove();
+      try { console.debug('TopNavFooter: removed footer container', this._footerContainerId); } catch (e) { }
+    }
+
+    // remove hide styles and un-hide original header elements
+    const hideStyle = document.getElementById('spfx-hide-header-style');
+    if (hideStyle) {
+      hideStyle.remove();
+      try { console.debug('TopNavFooter: removed style spfx-hide-header-style'); } catch (e) { }
+    }
+    // remove the early critical hide style as well
+    const critical = document.getElementById(this._criticalHideStyleId);
+    if (critical) {
+      critical.remove();
+      try { console.debug('TopNavFooter: removed critical hide style', this._criticalHideStyleId); } catch (e) { }
+    }
+    this._removeHideStyleEarly();
+
+    // remove any inserted nodes with known class names that may still be present
+    document.querySelectorAll('.spfx-topnav-insert, .spfx-topnav-root, .spfx-topnav-inserted').forEach(el => {
+      try { el.remove(); } catch (e) { /* ignore */ }
+    });
+
+    // unhide original header elements
+    document.querySelectorAll('.spfx-hidden-original-header').forEach(el => {
+      try { (el as HTMLElement).classList.remove('spfx-hidden-original-header'); } catch (e) { }
+    });
+
+    // try to clear inline styles that may hide headers (be conservative)
+    const selectors = [
+      '#spSiteHeader', '.spSiteHeader', '[data-automation-id="SiteHeader"]', '#SuiteNavPlaceHolder', '.od-TopBar', '.ms-compositeHeader', '.SPCommandBar', '#DeltaPlaceHolderPageTitleInTitleArea', '.ms-HubNav', '.ms-HubNav-enhancedMegaMenu', '.ms-HorizontalNav'
+    ];
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => {
+        try {
+          const e = el as HTMLElement;
+          e.style.removeProperty('display');
+          e.style.removeProperty('visibility');
+          e.style.removeProperty('height');
+          e.style.removeProperty('margin');
+          e.style.removeProperty('padding');
+          e.style.removeProperty('opacity');
+          e.style.removeProperty('pointer-events');
+        } catch (err) { /* ignore */ }
+      });
+    });
+
+    // stop observers that re-apply hide styles
+    this._stopHeaderReapplyObserver();
+
+    // also remove the top placeholder content if we used it
+    if (this._topPlaceholder && this._topPlaceholder.domElement) {
+      try { ReactDOM.unmountComponentAtNode(this._topPlaceholder.domElement); } catch (e) { /* ignore */ }
+      try { console.debug('TopNavFooter: unmounted top placeholder'); } catch (e) { }
+    }
+
+    try { console.debug('TopNavFooter: forced cleanup complete'); } catch (e) { }
+    return;
+
+
+  }
+
+  private _enableCustomHeader(): void {
+    // Re-inject critical hide style and attempt to re-insert top nav
+    try {
+      this._injectHideStyleEarly();
+      this._renderPlaceholders();
+      this._createAndInsertTopNavAfterSearch();
+    } catch (e) {
+      console.warn('TopNavFooter: enableCustomHeader failed', e);
+    }
   }
 
   // private _removeHideStyleEarly(): void {
@@ -345,7 +476,7 @@ export default class TopNavFooterApplicationCustomizer
       hideStyle.remove();
     }
 
-  //  this._removeHideStyleEarly();
+    //  this._removeHideStyleEarly();
     this._stopHeaderReapplyObserver();
 
     if (this._observer) {

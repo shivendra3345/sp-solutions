@@ -18,5 +18,7 @@ export interface IBannerProps {
   newsTitle?: string;
   /** Comma-separated list of site URLs (relative or absolute) to exclude when fetching events */
   excludedSites?: string;
+  /** Toggle to enable or disable the header extension (global header UI) */
+  enableHeaderExtension?: boolean;
   context: WebPartContext; // SPFx web part context
 }
