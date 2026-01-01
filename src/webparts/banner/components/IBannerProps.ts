@@ -18,6 +18,12 @@ export interface IBannerProps {
   newsTitle?: string;
   /** Comma-separated list of site URLs (relative or absolute) to exclude when fetching events */
   excludedSites?: string;
+  /** Comma-separated list of selected lists to pull events from. Each entry is encoded as encodeURIComponent(webUrl) + '::' + listId */
+  selectedListIds?: string;
+  /** Comma-separated list of selected list display titles (for UI in property pane) */
+  selectedListTitles?: string;
+  /** Comma-separated list of internal field names to try for event description/body (priority order) */
+  descriptionFieldNames?: string;
   /** Toggle to enable or disable the header extension (global header UI) */
   enableHeaderExtension?: boolean;
   context: WebPartContext; // SPFx web part context

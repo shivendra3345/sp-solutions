@@ -28,7 +28,7 @@ interface IBannerItem {
 
 type TabKey = 'all' | 'news' | 'announcements';
 
-const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSites, showNews = true, showEvents = true, welcomeTitle, eventsTitle, newsTitle }) => {
+const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSites, showNews = true, showEvents = true, welcomeTitle, eventsTitle, newsTitle, selectedListIds, descriptionFieldNames }) => {
   const [userName, setUserName] = useState<string>('User');
   //const [featured, setFeatured] = useState<IFeaturedItem[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
@@ -233,7 +233,7 @@ const HeroBanner: React.FC<IBannerProps> = ({ context, showWelcome, excludedSite
 
         {showEvents && (
           <div className={styles.fullWidthPanel}>
-            <EventsCarousel context={context} excludedSitesCsv={excludedSites} title={eventsTitle} />
+            <EventsCarousel context={context} excludedSitesCsv={excludedSites} selectedListIdsCsv={selectedListIds} title={eventsTitle} descriptionFieldNamesCsv={descriptionFieldNames} />
           </div>
         )}
       </div>
