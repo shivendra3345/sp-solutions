@@ -1,0 +1,571 @@
+$max-width: 1200px;
+$transition-duration: 0.3s;
+$primary-color: #0078d4;
+$border-color: #e8e8e8;
+$text-color: #323130;
+$light-text: #605e5c;
+
+.pageCalendar {
+  width: 100%;
+  background: #ffffff;
+  margin: 0;
+  padding: 0;
+
+  &.darkTheme {
+    background: #1f1f1f;
+    color: #ffffff;
+
+    .calendarHeader {
+      border-bottom-color: #333;
+    }
+
+    .eventCard {
+      background: #2d2d2d;
+      border-color: #404040;
+    }
+
+    .monthCell {
+      border-color: #404040;
+    }
+
+    .dayCell {
+      border-color: #404040;
+
+      &.otherMonth {
+        background-color: #252525;
+      }
+    }
+
+    .eventItem {
+      background: #2d2d2d;
+      border-color: #404040;
+    }
+  }
+}
+
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+// ==================== HEADER ====================
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $border-color;
+}
+
+.calendarTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: $text-color;
+  position: relative;
+  padding-left: 12px;
+}
+
+.calendarTitle::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 20px;
+  background: $primary-color;
+  border-radius: 2px;
+  position: absolute;
+  left: 0;
+  top: 6px;
+}
+
+.headerControls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.navButton {
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color $transition-duration;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.monthYearDisplay {
+  font-size: 18px;
+  font-weight: 500;
+  min-width: 200px;
+  text-align: center;
+}
+
+// ==================== CALENDAR GRID LAYOUT ====================
+.calendarGrid {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.monthCell {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  border: 1px solid $border-color;
+  border-collapse: collapse;
+}
+
+.dayHeader {
+  background-color: #f3f2f1;
+  padding: 15px;
+  text-align: center;
+  font-weight: 600;
+  color: $text-color;
+  border: 1px solid $border-color;
+  grid-column: span 1;
+  font-size: 13px;
+  
+  @media (max-width: 768px) {
+    padding: 10px;
+    font-size: 11px;
+  }
+}
+
+.dayCell {
+  min-height: 130px;
+  padding: 8px;
+  border: 1px solid $border-color;
+  background-color: white;
+  position: relative;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  grid-column: span 1;
+
+  &.otherMonth {
+    background-color: #fafaf8;
+    opacity: 0.6;
+  }
+
+  &.today {
+    background-color: #e7f3ff;
+    border: 2px solid $primary-color;
+  }
+
+  &.selected {
+    background-color: #c7e0f4;
+  }
+
+  @media (max-width: 768px) {
+    min-height: 100px;
+    padding: 6px;
+    font-size: 12px;
+  }
+}
+
+.dayCellDate {
+  font-weight: 600;
+  color: $text-color;
+  margin-bottom: 4px;
+  font-size: 13px;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    font-size: 11px;
+  }
+}
+
+.dayCellEvents {
+  font-size: 10px;
+  line-height: 1.3;
+  overflow: auto;
+  flex: 1;
+  
+  @media (max-width: 768px) {
+    font-size: 9px;
+  }
+}
+
+.dayCellEvent {
+  background-color: $primary-color;
+  color: white;
+  padding: 2px 3px;
+  border-radius: 2px;
+  margin-bottom: 2px;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  cursor: pointer;
+  transition: opacity $transition-duration;
+  font-size: 10px;
+
+  &:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+}
+
+.moreEvents {
+  color: $primary-color;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 2px;
+  font-size: 9px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ==================== CAROUSEL LAYOUT ====================
+.carouselContainer {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 30px 20px;
+  position: relative;
+}
+
+.carouselContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.eventCardWrapper {
+  background: white;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all $transition-duration;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  &.active {
+    border-color: $primary-color;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.cardImage {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background-color: #f3f2f1;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 768px) {
+    height: 180px;
+  }
+}
+
+.cardContent {
+  padding: 20px;
+}
+
+.cardTitle {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: $text-color;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardDateTime {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: $light-text;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.cardDescription {
+  margin: 0 0 15px 0;
+  font-size: 13px;
+  color: $text-color;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 32px;
+}
+
+.cardMeta {
+  font-size: 12px;
+  color: $light-text;
+  line-height: 1.5;
+
+  p {
+    margin: 3px 0;
+  }
+}
+
+.carouselControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding-top: 20px;
+  border-top: 1px solid $border-color;
+}
+
+.carouselButton {
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color $transition-duration;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background-color: darken($primary-color, 10%);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.carouselIndicators {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 400px;
+}
+
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #cccccc;
+  cursor: pointer;
+  transition: background-color $transition-duration;
+
+  &.active {
+    background-color: $primary-color;
+  }
+
+  &:hover {
+    background-color: #999999;
+  }
+}
+
+.pageCounter {
+  font-size: 13px;
+  color: $light-text;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+// ==================== EVENT CARD (used in list view) ====================
+.eventCard {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+  transition: transform $transition-duration, box-shadow $transition-duration;
+  border: 1px solid $border-color;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.eventCardImage {
+  height: 200px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 768px) {
+    height: 150px;
+  }
+}
+
+.eventCardContent {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.eventCardTitle {
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: $text-color;
+}
+
+.eventCardDateTime {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: $light-text;
+  font-weight: 500;
+}
+
+.eventCardDescription {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  color: $text-color;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.eventCardMeta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 12px;
+  color: $light-text;
+
+  p {
+    margin: 0;
+  }
+}
+
+// ==================== EVENT ITEM (compact list) ====================
+.eventItem {
+  background: white;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all $transition-duration;
+
+  &:hover {
+    background-color: #f9f8f7;
+    border-color: $primary-color;
+  }
+}
+
+.eventItemTitle {
+  margin: 0 0 5px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: $text-color;
+}
+
+.eventItemTime {
+  margin: 0;
+  font-size: 12px;
+  color: $light-text;
+}
+
+// ==================== LOADING & ERROR STATES ====================
+.loading,
+.noEvents,
+.error {
+  padding: 60px 20px;
+  text-align: center;
+  color: $light-text;
+
+  p {
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+.error {
+  color: #d13438;
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid $border-color;
+  border-top-color: $primary-color;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ==================== RESPONSIVE ====================
+@media (max-width: 768px) {
+  .calendarHeader {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .headerControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .monthYearDisplay {
+    min-width: auto;
+  }
+}

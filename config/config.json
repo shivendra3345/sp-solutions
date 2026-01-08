@@ -17,11 +17,20 @@
           "manifest": "./src/extensions/topNavFooter/TopNavFooterApplicationCustomizer.manifest.json"
         }
       ]
+    },
+    "dpt-page-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/dptPage/DptPageWebPart.js",
+          "manifest": "./src/webparts/dptPage/DptPageWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
     "BannerWebPartStrings": "lib/webparts/banner/loc/{locale}.js",
-    "TopNavFooterApplicationCustomizerStrings": "lib/extensions/topNavFooter/loc/{locale}.js"
+    "TopNavFooterApplicationCustomizerStrings": "lib/extensions/topNavFooter/loc/{locale}.js",
+    "DptPageWebPartStrings": "lib/webparts/dptPage/loc/{locale}.js"
   }
 }
