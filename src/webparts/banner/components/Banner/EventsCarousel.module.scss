@@ -1,0 +1,114 @@
+.carouselWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative; /* allow arrows to be positioned over slides */
+}
+.slides {
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+  flex: 1 1 auto;
+  min-width: 0;
+  grid-template-columns: repeat(3, 1fr);
+}
+.slide {
+  display: block;
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.banner {
+  height: 140px;
+  background-size: cover;
+  background-position: center;
+}
+.meta { padding: 10px; }
+.title {
+  margin: 0 0 8px 0; /* add gap below title to separate from carousel */
+  font-size: 16px;
+  color: #0b4f7a;
+  font-weight: 600;
+  text-align: left;
+}
+.info { font-size: 12px; color: #666; margin-bottom: 6px; }
+.summary { font-size: 13px; color: #444; margin: 0; }
+.arrowLeft, .arrowRight {
+  background: rgba(255,255,255,0.95);
+  border: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute; /* overlay on slides */
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+}
+.arrowLeft { left: 8px; }
+.arrowRight { right: 8px; }
+
+/* reduce pointer area on small screens */
+@media (max-width: 720px) {
+  .arrowLeft, .arrowRight { width: 36px; height: 36px; left: 6px; right: 6px; }
+}
+.empty { padding: 14px; color: #666 }
+
+/* Modal dialog helpers for event details */
+.modalImage {
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+  object-fit: cover;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  display: block;
+}
+.modalBody {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.slide:focus {
+  outline: 3px solid rgba(15,106,180,0.14);
+  outline-offset: 2px;
+}
+/* Ensure Fluent UI Dialogs render above other elements and are not clipped by parent overflow. */
+:global(.ms-Dialog) {
+  position: fixed !important;
+  left: 50% !important;
+  top: 18% !important;
+  transform: translateX(-50%) !important;
+  z-index: 100000 !important;
+}
+:global(.ms-Dialog-main) {
+  max-width: 720px !important;
+  width: calc(100% - 40px) !important;
+}
+:global(.ms-Dialog-overlay) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+}
+
+@media (max-width: 1000px) {
+  .slides { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 720px) {
+  .slides { grid-template-columns: repeat(1, 1fr); }
+}

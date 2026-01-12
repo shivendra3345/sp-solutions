@@ -1,0 +1,325 @@
+$max-width: 1200px;
+$transition-duration: 0.3s;
+$primary-color: #0078d4;
+$overlay-bg: rgba(0, 0, 0, 0.4);
+
+.pageBanner {
+  width: 100%;
+  background: #f3f2f1;
+  margin: 0;
+
+  &.darkTheme {
+    background: #1f1f1f;
+    color: #ffffff;
+  }
+}
+
+// ==================== CAROUSEL LAYOUT ====================
+.carousel {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+}
+
+.carouselContainer {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  background: #e8e8e8;
+
+  @media (max-width: 768px) {
+    height: 250px;
+  }
+}
+
+.carouselImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carouselOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 30px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: white;
+  z-index: 2;
+}
+
+.carouselTitle {
+  margin: 0 0 10px 0;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+  }
+}
+
+.carouselDescription {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  line-height: 1.5;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+}
+
+.carouselLink {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: $primary-color;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color $transition-duration;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+}
+
+.carouselButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  font-size: 24px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color $transition-duration;
+  z-index: 3;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+
+  &.prevButton {
+    left: 10px;
+  }
+
+  &.nextButton {
+    right: 10px;
+  }
+}
+
+.dotsContainer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 0;
+  background: white;
+  flex-wrap: wrap;
+
+  .darkTheme & {
+    background: #1f1f1f;
+  }
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #cccccc;
+  border: none;
+  cursor: pointer;
+  transition: background-color $transition-duration;
+
+  &:hover {
+    background-color: #999999;
+  }
+
+  &.activeDot {
+    background-color: $primary-color;
+  }
+}
+
+// ==================== TILE LAYOUT ====================
+.tileContainer {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  padding: 20px;
+  max-width: 100%;
+  background: white;
+
+  .darkTheme & {
+    background: #1f1f1f;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 15px;
+  }
+}
+
+.mainTile,
+.smallTile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #e8e8e8;
+  cursor: pointer;
+  transition: transform $transition-duration;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+.mainTile {
+  height: 400px;
+  grid-row: 1 / 3;
+
+  @media (max-width: 768px) {
+    height: 300px;
+    grid-row: auto;
+    grid-column: auto;
+  }
+}
+
+.mainTileImage,
+.smallTileImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.tileOverlay,
+.smallTileOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: white;
+  z-index: 2;
+}
+
+.tileTitle {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.tileDescription {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tileLink {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: $primary-color;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 12px;
+  transition: background-color $transition-duration;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+}
+
+.smallTilesColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: row;
+    gap: 15px;
+
+    .smallTile {
+      flex: 1;
+    }
+  }
+}
+
+.smallTile {
+  height: 185px;
+  position: relative;
+
+  @media (max-width: 768px) {
+    height: 150px;
+  }
+}
+
+.smallTileOverlay {
+  padding: 15px;
+
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
+}
+
+.smallTileTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.smallTileDescription {
+  margin: 5px 0 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.emptyTile {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8e8e8;
+  color: #999;
+  font-size: 14px;
+}
+
+// ==================== LOADING & ERROR STATES ====================
+.loading,
+.noImages,
+.error {
+  padding: 40px;
+  text-align: center;
+  background: white;
+  color: #666;
+
+  .darkTheme & {
+    background: #1f1f1f;
+    color: #ccc;
+  }
+}
+
+.error {
+  color: #d13438;
+  padding: 20px;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,361 @@
+$max-width: 1200px;
+$transition-duration: 0.3s;
+$primary-color: #0078d4;
+$border-color: #e8e8e8;
+$text-color: #323130;
+$light-text: #605e5c;
+
+.pageTeamMembers {
+  width: 100%;
+  background: #ffffff;
+  margin: 0;
+  padding: 0;
+
+  &.darkTheme {
+    background: #1f1f1f;
+    color: #ffffff;
+
+    .membersHeader {
+      border-bottom-color: #333;
+    }
+
+    .memberCard {
+      background: #2d2d2d;
+      border-color: #404040;
+
+      .memberInfo {
+        border-top-color: #404040;
+      }
+
+      .memberName {
+        color: #ffffff;
+      }
+
+      .memberJobTitle {
+        color: #b0b0b0;
+      }
+
+      .memberContact {
+        color: #b0b0b0;
+      }
+    }
+  }
+}
+
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+// ==================== HEADER ====================
+.membersHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $border-color;
+}
+
+.membersTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: $text-color;
+  position: relative;
+  padding-left: 12px;
+}
+
+.membersTitle::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 20px;
+  background: $primary-color;
+  border-radius: 2px;
+  position: absolute;
+  left: 0;
+  top: 6px;
+}
+
+// ==================== GRID LAYOUT ====================
+.membersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+// ==================== MEMBER CARD ====================
+.memberCard {
+  background: white;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all $transition-duration;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(16,24,40,0.04);
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(16,24,40,0.08);
+    border-color: $primary-color;
+  }
+}
+
+.memberPhoto {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background-color: #f3f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 768px) {
+    height: 120px;
+  }
+}
+
+.memberInfo {
+  padding: 12px;
+  border-top: 1px solid $border-color;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.memberName {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-color;
+  line-height: 1.2;
+  word-break: break-word;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
+}
+
+.memberJobTitle {
+  margin: 0 0 8px 0;
+  font-size: 10px;
+  color: $primary-color;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+
+  @media (max-width: 768px) {
+    font-size: 9px;
+  }
+}
+
+.memberContact {
+  font-size: 12px;
+  color: $light-text;
+  line-height: 1.6;
+  flex: 1;
+  margin-bottom: 12px;
+
+  .contactItem {
+    margin: 6px 0;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    word-break: break-word;
+
+    strong {
+      color: $text-color;
+      flex-shrink: 0;
+      min-width: 70px;
+    }
+  }
+}
+
+.memberLocation {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding-top: 12px;
+  border-top: 1px solid $border-color;
+  font-size: 12px;
+  color: $light-text;
+
+  strong {
+    color: $text-color;
+    flex-shrink: 0;
+  }
+
+  span {
+    word-break: break-word;
+  }
+}
+
+// ==================== LOADING & ERROR STATES ====================
+.loading,
+.noMembers,
+.error {
+  padding: 60px 20px;
+  text-align: center;
+  color: $light-text;
+
+  p {
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+.error {
+  color: #d13438;
+  padding: 20px;
+
+  p {
+    font-size: 14px;
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid $border-color;
+  border-top-color: $primary-color;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ==================== LIST VIEW (Alternative) ====================
+.membersList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.memberListItem {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 20px;
+  padding: 20px;
+  background: white;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  transition: all $transition-duration;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: $primary-color;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 80px 1fr;
+    gap: 15px;
+    padding: 15px;
+  }
+}
+
+.memberListPhoto {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f3f2f1;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 768px) {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+.memberListInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.memberListName {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: $text-color;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+}
+
+.memberListJobTitle {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: $primary-color;
+  font-weight: 500;
+}
+
+.memberListContactGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  font-size: 12px;
+  color: $light-text;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .contactField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    strong {
+      color: $text-color;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    span {
+      word-break: break-word;
+    }
+  }
+}

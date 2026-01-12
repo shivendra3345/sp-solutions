@@ -7,7 +7,7 @@
 
 :root {
   /* fallback link colors if needed */
-  --link: #03787c;
+  --link: #006563;
   --linkHovered: #014446;
 }
 
@@ -38,18 +38,24 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+
+  display: flex;              /* enable flexbox */
+  align-items: flex-end;      /* push children to bottom */
+  justify-content: center;    /* center horizontally */
+
 }
 
 .heroOverlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.28); /* dark overlay for contrast */
+  //background: rgba(0,0,0,0.28); /* dark overlay for contrast */
   z-index: 1;
 }
 
 /* inner content sits above overlay and is constrained */
 .heroContent {
-  position: relative;
+   position: relative;   /* instead of relative */
+  //bottom: 0;            /* stick to bottom */
   z-index: 2;
   padding: 36px 20px;
   max-width: 1200px;
@@ -58,9 +64,9 @@
   flex-direction: column;
   gap: 18px;
   align-items: center;
-  color: #ffffff; /* text on hero should be light for contrast */
+  color: #ffffff;
   width: 600px;
-  background-color: #1b4429; /* semi-opaque background for readability */
+  background-color: rgba(0, 101, 99, 0.7); /* 70% opaque */
 }
 
 /* center block: welcome + search stacked and centered */
@@ -202,8 +208,21 @@
 .sidePanels {
   display: flex;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 0px;
   flex-wrap: wrap;
+  flex: 0 0 320px; /* fixed width column for welcome panel */
+}
+
+/* A row that contains the small side panel(s) and the larger events panel.
+   On wide screens it displays side-by-side; on small screens it stacks. */
+.panelsRow {
+  display: flex;
+  gap: 12px;
+  
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: nowrap; /* keep side-by-side on wide screens */
 }
 
 .panel {
@@ -212,6 +231,25 @@
   border-radius: 8px;
   width: 320px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+/* full width panel used by the events carousel so it spans the content area */
+.fullWidthPanel {
+  /* allow this panel to take remaining space beside the side panel */
+  flex: 1 1 auto;
+  min-width: 220px;
+  margin-top: 0; /* handled by panelsRow */
+  background: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  box-sizing: border-box;
+}
+
+@media (max-width: 980px) {
+  .panelsRow { flex-direction: column; flex-wrap: wrap; }
+  .fullWidthPanel { width: 100%; }
+  .sidePanels { width: 100%; flex: none; }
 }
 
 .staffList {
@@ -308,24 +346,43 @@
 }
 /* Tabs + section header (placed before featured list) */
 .tabsAndHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  /* removed display:flex to avoid left-alignment; layout now relies on absolute-centering of the tabs container */
   max-width: 1200px;
   margin: 18px auto 8px;
   padding: 0 20px;
+  position: relative; /* allow absolute-centering of the tabs container */
 }
 
-.tabsContainer {
+/* Section titles used above content areas (news, events, welcome) */
+.title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #0b4f7a;
+  font-weight: 600;
+  text-align: left;
+}
+
+.tabContainer {
   flex: 1 1 auto;
   min-width: 240px;
+  /* center the Pivot (tab list) horizontally inside the header */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* reduce default reserved space between tabs and panels; JS will size where available */
+  min-height: 12px;
+  /* center visually by absolute positioning within .tabsAndHeader on wide screens */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Target Fluent UI Pivot classes */
 .tabsContainer :global(.ms-Pivot) {
   background: transparent;
   box-shadow: none;
+  display: inline-flex; /* allow centering container to center the pivot */
+  align-items: center;
 }
 
 .tabsContainer :global(.ms-Pivot-link) {
@@ -351,6 +408,11 @@
 .sectionHeader {
   flex: 0 0 auto;
   text-align: right;
+  /* keep the right-side header visually on the right when .tabsAndHeader is not flex */
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .sectionHeader h2 {
@@ -378,4 +440,141 @@
   .sectionHeader {
     text-align: left;
   }
+  /* revert absolute centering on small screens so layout stacks naturally */
+  .tabsContainer {
+    position: relative;
+    left: auto;
+    transform: none;
+    justify-content: flex-start;
+  }
+  /* responsive: restore normal flow for sectionHeader */
+  .sectionHeader {
+    position: static;
+    right: auto;
+    top: auto;
+    transform: none;
+  }
+}
+.featuredList {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px; /* reduce vertical gap between tabs/header and slides */
+  flex-wrap: wrap;
+  align-items: flex-start; /* avoid equal height stretching */
+}
+
+/* Tab transition helpers: smooth fade/slide when switching between News/Announcements/All */
+.fadeOut {
+  transition: opacity 180ms ease, transform 180ms ease;
+  opacity: 0;
+  transform: translateY(6px);
+}
+.fadeIn {
+  transition: opacity 300ms ease, transform 300ms ease;
+  opacity: 1;
+  transform: translateY(0px);
+}
+
+/* Layer used to overlap content during transition */
+.tabContainer {
+  /* Do not absolutely position layers — keep them in the flow so their heights
+     contribute to layout and prevent overlapping of sections below. */
+  display: block;
+  position: relative;
+  min-height: 220px; /* fallback while JS measures */
+}
+.tabLayer {
+  position: relative; /* default: visible layers remain in flow */
+  width: 100%;
+  will-change: opacity, transform;
+  display: block;
+}
+
+/* ensure featuredList inside a layer participates in layout measurement */
+.tabLayer .featuredList {
+  position: relative;
+}
+
+/* visibility helpers: use visibility to preserve layout and opacity for smoothness */
+.tabLayer.hidden {
+  /* remove hidden layers from the document flow so they don't add vertical space */
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 240ms ease, transform 240ms ease, visibility 0ms linear 240ms;
+}
+.tabLayer.visible {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity 320ms ease, transform 320ms ease;
+}
+
+/* Featured card reference (unchanged) */
+.featuredCard {
+  box-sizing: border-box;
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 8px;
+  width: 320px;
+  flex: 0 0 320px; /* prevents stretching, matches newsCard */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.heroSection {
+  position: relative;
+  width: 100%;
+  min-height: 400px; /* increased height */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.carouselControls {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.6);
+  cursor: pointer;
+}
+
+.activeDot {
+  background: #fff;
+}
+.infoTileList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+}
+
+.modalImage {
+  width: 100%;
+  height: auto;
+  margin-bottom: 12px;
+  border-radius: 6px;
+}
+
+.modalBody {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
 }

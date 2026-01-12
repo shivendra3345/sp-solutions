@@ -16,13 +16,13 @@
   "supportsThemeVariants": true,
 
   "preconfiguredEntries": [{
-    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Advanced
+    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", 
     "group": { "default": "Advanced" },
-    "title": { "default": "banner" },
-    "description": { "default": "banner description" },
+    "title": { "default": "Home Page" },
+    "description": { "default": "Home page of intranet site" },
     "officeFabricIconFontName": "Page",
     "properties": {
-      "description": "banner"
+      "description": "Home Page"
     }
   }]
 }

@@ -1,0 +1,190 @@
+/* Inline into HeroBanner's .featuredList flex layout */
+.noItems {
+  padding: 18px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Match featuredCard/newsCard styling */
+.announcementCard {
+  box-sizing: border-box;
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 8px;
+  width: 320px;
+  flex: 0 0 320px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+}
+
+.announcementImage {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  margin-bottom: 8px;
+  border-radius: 6px;
+}
+
+.imageWrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.cardOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.48) 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transform: translateY(8px);
+  opacity: 0;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.overlayTitle { font-weight: 600; font-size: 14px; color: #fff; }
+.overlayMeta { font-size: 12px; color: rgba(255,255,255,0.85); }
+
+.announcementCard:hover .cardOverlay,
+.announcementCard:focus-within .cardOverlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.announcementTitle {
+  margin: 0;
+  font-size: 16px;
+  color: #0b4f7a;
+  font-weight: 600;
+}
+
+.announcementExcerpt {
+  margin: 8px 0 0 0;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.announcementMeta {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modalContent {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 800px;
+  width: 92%;
+  max-height: 95vh;
+  overflow-y: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.modalMeta {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.modalImage {
+  width: 100%;
+  height: auto;
+  margin-bottom: 12px;
+  border-radius: 6px;
+}
+
+.modalBody {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* Ensure Fluent UI Dialogs render above other elements and are not clipped by parent overflow. */
+:global(.ms-Dialog) {
+  position: fixed !important;
+  left: 50% !important;
+  top: 12% !important;
+  transform: translateX(-50%) !important;
+  z-index: 100000 !important;
+}
+:global(.ms-Dialog-main) {
+  max-width: 980px !important;
+  width: calc(100% - 40px) !important;
+  max-height: calc(100vh - 120px) !important;
+  overflow: hidden !important;
+}
+:global(.ms-Dialog-overlay) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+}
+/* Make dialog content scrollable while keeping header/footer visible */
+:global(.ms-Dialog-main .ms-Dialog-content) {
+  overflow-y: auto !important;
+  max-height: calc(100vh - 220px) !important;
+}
+/* Keep dialog footer visible by making actions/footer sticky within the dialog */
+:global(.ms-Dialog-main .ms-Dialog-actions),
+:global(.ms-Dialog-main .ms-Dialog-footer) {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: #fff !important;
+  z-index: 1200 !important;
+  padding-top: 8px !important;
+  box-shadow: 0 -6px 12px rgba(0,0,0,0.06);
+}

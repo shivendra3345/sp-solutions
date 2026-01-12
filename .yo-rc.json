@@ -16,7 +16,6 @@
     "solutionShortDescription": "sp-solutions description",
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
-    "componentType": "extension",
-    "extensionType": "ApplicationCustomizer"
+    "componentType": "webpart"
   }
 }

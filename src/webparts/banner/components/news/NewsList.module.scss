@@ -1,0 +1,234 @@
+/* Inline into HeroBanner's .featuredList flex layout */
+.newsListInline {
+  display: contents; /* children become direct flex items of parent */
+}
+
+/* Placeholder when no items */
+.noItems {
+  padding: 18px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Match featuredCard dimensions exactly */
+.newsCard {
+  box-sizing: border-box;
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 8px;
+  width: 320px;          /* match .featuredCard */
+  flex: 0 0 320px;       /* prevent stretching in flex parent */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  position: relative;    /* create own stacking context */
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+}
+
+.newsImage {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  pointer-events: none; /* ensure image doesn't swallow click */
+}
+
+.imageWrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.cardOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.48) 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transform: translateY(8px);
+  opacity: 0;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.cardOverlay .overlayTitle {
+  font-weight: 600;
+  font-size: 14px;
+  color: #fff;
+}
+.cardOverlay .overlayMeta {
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+}
+
+.newsCard:hover .cardOverlay,
+.newsCard:focus-within .cardOverlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.newsTitle {
+  margin: 0;
+  font-size: 16px;
+  color: #0b4f7a;
+  font-weight: 600;
+}
+
+.newsExcerpt {
+  margin: 8px 0 0 0;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.newsMeta {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modalContent {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 1000px;
+  width: 92%;
+  max-height: 98vh;
+  overflow-y: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+  z-index: 1000;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  color: #333;
+  z-index: 1200;
+  padding: 6px 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.modalMeta {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.newsIframe {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 60vh;
+  max-height: calc(100vh - 220px);
+  border: none;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+/* Ensure Fluent UI Dialogs render above other elements and are not clipped by parent overflow. */
+:global(.ms-Dialog) {
+  position: fixed !important;
+  left: 50% !important;
+  top: 12% !important; /* lift dialog a bit to show more of the footer on shorter viewports */
+  transform: translateX(-50%) !important;
+  z-index: 100000 !important;
+}
+:global(.ms-Dialog-main) {
+  max-width: 980px !important; /* allow wider view for content */
+  width: calc(100% - 40px) !important;
+  max-height: calc(100vh - 120px) !important; /* ensure dialog fits within viewport */
+  overflow: hidden !important;
+}
+:global(.ms-Dialog-overlay) {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+}
+/* Make the dialog content scrollable while keeping header/footer visible */
+:global(.ms-Dialog-main .ms-Dialog-content) {
+  overflow-y: auto !important;
+  max-height: calc(100vh - 220px) !important;
+}
+/* Keep dialog footer visible by making actions/footer sticky within the dialog */
+:global(.ms-Dialog-main .ms-Dialog-actions),
+:global(.ms-Dialog-main .ms-Dialog-footer) {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: #fff !important;
+  z-index: 1200 !important;
+  padding-top: 8px !important;
+  box-shadow: 0 -6px 12px rgba(0,0,0,0.06);
+}
+
+.modalImage {
+  width: 100%;
+  height: auto;
+  max-height: 50vh;
+  object-fit: contain;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  display: block;
+  z-index: 100;
+}
+
+.modalBody {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* Responsive: match featuredCard rules */
+@media (max-width: 980px) {
+  .newsCard {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+}
