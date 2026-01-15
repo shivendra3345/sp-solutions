@@ -22,6 +22,7 @@ export interface ICalendarState {
     currentIndex: number;
     loading: boolean;
     selectedDate: Date;
+    selectedEvent?: ICalendarEvent;
     layout: string;
     error?: string;
 }

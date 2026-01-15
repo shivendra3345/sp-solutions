@@ -5,11 +5,13 @@ import CalendarEventService, { ICalendarEvent } from '../../services/CalendarEve
 
 export default class Calendar extends React.Component<ICalendarProps, ICalendarState> {
     private calendarService: CalendarEventService;
+    private calloutCloseRef: React.RefObject<HTMLButtonElement>;
     private readonly DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     constructor(props: ICalendarProps) {
         super(props);
         this.calendarService = new CalendarEventService(props.context);
+        this.calloutCloseRef = React.createRef<HTMLButtonElement>();
         this.state = {
             events: [],
             filteredEvents: [],
@@ -22,6 +24,7 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
     }
 
     public componentDidMount(): void {
+        console.debug('[Calendar] componentDidMount');
         this.loadCalendarEvents();
     }
 
@@ -53,6 +56,8 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
                 const allEvents = [...outlookEvents, ...spEvents];
                 // Sort by start date
                 allEvents.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+
+                console.debug('[Calendar] loaded events counts', { outlook: outlookEvents.length, sp: spEvents.length, total: allEvents.length });
 
                 this.setState({
                     events: allEvents,
@@ -235,7 +240,26 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
                                     <div className={styles.dayCellDate}>{day.date}</div>
                                     <div className={styles.dayCellEvents}>
                                         {day.events.slice(0, 3).map((event: ICalendarEvent, i: number) => (
-                                            <div key={i} className={styles.dayCellEvent} title={event.title}>
+                                            <div
+                                                key={i}
+                                                className={styles.dayCellEvent}
+                                                title={event.title}
+                                                data-event-title={event.title}
+                                                role="button"
+                                                tabIndex={0}
+                                                onClick={(ev) => {
+                                                    console.debug('[Calendar] event element clicked', event && event.title);
+                                                    ev.stopPropagation();
+                                                    this.openEventCallout(event);
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                        e.preventDefault();
+                                                        console.debug('[Calendar] event element key activated', event && event.title);
+                                                        this.openEventCallout(event);
+                                                    }
+                                                }}
+                                            >
                                                 {event.title}
                                             </div>
                                         ))}
@@ -284,6 +308,16 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
                                 <div
                                     key={index}
                                     className={`${styles.eventCardWrapper} ${index === currentIndex ? styles.active : ''}`}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={(ev) => { console.debug('[Calendar] carousel card click', event && event.title); ev.stopPropagation(); this.openEventCallout(event); }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            console.debug('[Calendar] carousel card key activate', event && event.title);
+                                            this.openEventCallout(event);
+                                        }
+                                    }}
                                 >
                                     <div className={styles.cardImage}>
                                         <img src={thumbnailUrl} alt={event.title} />
@@ -353,6 +387,53 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
         );
     }
 
+    private openEventCallout = (event: ICalendarEvent): void => {
+        console.debug('[Calendar] openEventCallout', event && event.title);
+        this.setState({ selectedEvent: event }, () => {
+            try {
+                if (this.calloutCloseRef && this.calloutCloseRef.current) {
+                    this.calloutCloseRef.current.focus();
+                }
+            } catch (e) {
+                // ignore focus errors
+            }
+        });
+    };
+
+    private closeEventCallout = (): void => {
+        console.debug('[Calendar] closeEventCallout');
+        this.setState({ selectedEvent: undefined });
+    };
+
+    private renderEventCallout(): React.ReactElement | null {
+        const { selectedEvent } = this.state;
+        if (!selectedEvent) return null;
+
+        return (
+            <div className={styles.calloutBackdrop} onClick={this.closeEventCallout}>
+                <div className={styles.callout} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal={true} aria-label="Event details">
+                    <div className={styles.calloutHeader}>
+                        <h3 className={styles.calloutTitle}>{selectedEvent.title}</h3>
+                        <button ref={this.calloutCloseRef} className={styles.calloutClose} onClick={this.closeEventCallout} aria-label="Close">×</button>
+                    </div>
+
+                    <div className={styles.calloutBody}>
+                        <p className={styles.calloutRow}><strong>Date:</strong> {this.formatDateRange(selectedEvent)}</p>
+                        <p className={styles.calloutRow}><strong>Time:</strong> {this.formatEventTime(selectedEvent)}</p>
+                        {selectedEvent.location && <p className={styles.calloutRow}><strong>Location:</strong> {selectedEvent.location}</p>}
+                        {selectedEvent.createdBy && <p className={styles.calloutRow}><strong>Organizer:</strong> {selectedEvent.createdBy}</p>}
+                        {selectedEvent.description && (
+                            <div className={styles.calloutDescription}>
+                                <strong>Description:</strong>
+                                <div className={styles.calloutDescriptionText}>{selectedEvent.description}</div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     public render(): React.ReactElement<ICalendarProps> {
         const { layout, error, loading } = this.state;
 
@@ -377,6 +458,7 @@ export default class Calendar extends React.Component<ICalendarProps, ICalendarS
                 <div className={styles.container}>
                     {layout === 'carousel' ? this.renderCarouselLayout() : this.renderCalendarGridLayout()}
                 </div>
+                {this.renderEventCallout()}
             </div>
         );
     }
