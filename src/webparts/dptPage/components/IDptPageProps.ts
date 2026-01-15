@@ -12,11 +12,13 @@ export interface IDptPageProps {
   spListTitle?: string;
   teamMembersListTitle?: string;
   teamMembersTitle?: string;
+  teamMembersDepartment?: string;
   teamMembersItemsPerRow?: number;
   showPageBanner: boolean;
   showCalendar: boolean;
   showTeamMembers: boolean;
   quickLinksListTitle?: string;
   quickLinksTitle?: string;
+  quickLinksDepartment?: string;
   showQuickLinks: boolean;
 }

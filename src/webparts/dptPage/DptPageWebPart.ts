@@ -25,12 +25,14 @@ export interface IDptPageWebPartProps {
   spListTitle?: string;
   teamMembersListTitle?: string;
   teamMembersTitle?: string;
+  teamMembersDepartment?: string;
   teamMembersItemsPerRow?: number;
   showPageBanner: boolean;
   showCalendar: boolean;
   showTeamMembers: boolean;
   quickLinksListTitle?: string;
   quickLinksTitle?: string;
+  quickLinksDepartment?: string;
   showQuickLinks: boolean;
 }
 
@@ -67,12 +69,14 @@ export default class DptPageWebPart extends BaseClientSideWebPart<IDptPageWebPar
         spListTitle: this.properties.spListTitle || 'Calendar',
         teamMembersListTitle: this.properties.teamMembersListTitle || 'Team Members',
         teamMembersTitle: this.properties.teamMembersTitle || 'Our Team',
+        teamMembersDepartment: this.properties.teamMembersDepartment || '',
         teamMembersItemsPerRow: this.properties.teamMembersItemsPerRow || 4,
         showPageBanner: this.properties.showPageBanner !== false,
         showCalendar: this.properties.showCalendar !== false,
         showTeamMembers: this.properties.showTeamMembers !== false,
         quickLinksListTitle: this.properties.quickLinksListTitle || 'QuickLinks',
         quickLinksTitle: this.properties.quickLinksTitle || 'Quick Links',
+        quickLinksDepartment: this.properties.quickLinksDepartment || '',
         showQuickLinks: this.properties.showQuickLinks !== false
       }
     );
@@ -152,6 +156,12 @@ export default class DptPageWebPart extends BaseClientSideWebPart<IDptPageWebPar
                   value: this.properties.teamMembersTitle || 'Our Team',
                   description: 'The title displayed above the team members cards'
                 })
+                ,
+                PropertyPaneTextField('teamMembersDepartment', {
+                  label: 'Team Members Department',
+                  value: this.properties.teamMembersDepartment || '',
+                  description: 'Optional: filter displayed members by Department field'
+                })
               ]
             },
             {
@@ -166,6 +176,12 @@ export default class DptPageWebPart extends BaseClientSideWebPart<IDptPageWebPar
                   label: 'Quick Links Section Title',
                   value: this.properties.quickLinksTitle || 'Quick Links',
                   description: 'The title displayed above the quick links carousel'
+                })
+                ,
+                PropertyPaneTextField('quickLinksDepartment', {
+                  label: 'Quick Links Department',
+                  value: this.properties.quickLinksDepartment || '',
+                  description: 'Optional: filter quick links by Department field'
                 })
               ]
             },

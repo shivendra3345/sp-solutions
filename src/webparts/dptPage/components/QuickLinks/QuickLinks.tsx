@@ -48,7 +48,7 @@ export default class QuickLinks extends React.Component<IQuickLinksProps, IQuick
     private loadQuickLinks(): void {
         this.setState({ loading: true, error: undefined });
 
-        this.quickLinksService.getQuickLinks(this.props.listTitle)
+        this.quickLinksService.getQuickLinks(this.props.listTitle, this.props.department)
             .then((quickLinks: IQuickLink[]) => {
                 this.setState({
                     quickLinks,

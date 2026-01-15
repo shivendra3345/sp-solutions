@@ -28,7 +28,8 @@ export class TeamMembers extends React.Component<ITeamMembersProps, ITeamMembers
             this.setState({ loading: true, error: undefined });
 
             const listTitle = this.props.listTitle || 'Team Members';
-            const members = await this.teamMembersService.getTeamMembers(listTitle);
+            const department = this.props.department;
+            const members = await this.teamMembersService.getTeamMembers(listTitle, department);
 
             this.setState({
                 teamMembers: members,

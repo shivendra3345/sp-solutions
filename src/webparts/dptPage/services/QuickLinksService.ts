@@ -6,6 +6,8 @@ export interface IQuickLink {
     title: string;
     imageUrl: string;
     link: string;
+    department?: string;
+    isActive?: boolean;
 }
 
 export default class QuickLinksService {
@@ -22,15 +24,25 @@ export default class QuickLinksService {
      * @param listTitle The title or name of the SharePoint list containing quick links
      * @returns Promise resolving to an array of quick links
      */
-    public async getQuickLinks(listTitle: string): Promise<IQuickLink[]> {
+    public async getQuickLinks(listTitle: string, department?: string): Promise<IQuickLink[]> {
         if (this.useMock) {
             return this.getMockQuickLinks();
         }
 
         try {
             const webUrl = this.context.pageContext.web.absoluteUrl;
-            // Query to get items with image URL, title, and link fields
-            const requestUrl = `${webUrl}/_api/web/lists/getbytitle('${encodeURIComponent(listTitle)}')/items?$select=Id,Title,ImageUrl,Link&$orderby=Created desc`;
+            // Build select fields and filter for IsActive; optionally filter by Department
+            let selectFields = 'Id,Title,ImageUrl,Link,Department,IsActive';
+            let requestUrl = `${webUrl}/_api/web/lists/getbytitle('${encodeURIComponent(listTitle)}')/items?$select=${selectFields}&$orderby=Created desc&$top=500`;
+
+            // Apply Department filter if provided (escape single quotes for OData)
+            if (department && department.trim().length > 0) {
+                const escaped = department.replace(/'/g, "''");
+                // append $filter; ensure proper conjunction if there is an existing filter
+                requestUrl = `${webUrl}/_api/web/lists/getbytitle('${encodeURIComponent(listTitle)}')/items?$select=${selectFields}&$filter=IsActive eq 1 and Department eq '${escaped}'&$orderby=Created desc&$top=500`;
+            } else {
+                requestUrl = `${webUrl}/_api/web/lists/getbytitle('${encodeURIComponent(listTitle)}')/items?$select=${selectFields}&$filter=IsActive eq 1&$orderby=Created desc&$top=500`;
+            }
 
             const response: SPHttpClientResponse = await this.context.spHttpClient.get(
                 requestUrl,
@@ -54,7 +66,9 @@ export default class QuickLinksService {
             id: String(item.Id),
             title: item.Title || '',
             imageUrl: item.ImageUrl || '',
-            link: item.Link || ''
+            link: item.Link || '',
+            department: item.Department || undefined,
+            isActive: item.IsActive === true || item.IsActive === 1 || item.IsActive === '1' || item.IsActive === 'true'
         };
     }
 

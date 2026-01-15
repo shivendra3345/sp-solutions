@@ -5,6 +5,7 @@ export interface ITeamMembersProps {
     context: WebPartContext;
     listTitle: string;
     title?: string;
+    department?: string;
     isDarkTheme?: boolean;
     itemsPerRow?: number;
 }

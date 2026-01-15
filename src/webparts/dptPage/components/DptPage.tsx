@@ -23,6 +23,7 @@ export default class DptPage extends React.Component<IDptPageProps, {}> {
             context={this.props.context}
             listTitle={this.props.quickLinksListTitle || 'QuickLinks'}
             title={this.props.quickLinksTitle}
+            department={this.props.quickLinksDepartment}
           />
         )}
 
@@ -46,6 +47,7 @@ export default class DptPage extends React.Component<IDptPageProps, {}> {
                 context={this.props.context}
                 listTitle={this.props.teamMembersListTitle || 'Team Members'}
                 title={this.props.teamMembersTitle}
+                department={this.props.teamMembersDepartment}
                 itemsPerRow={this.props.teamMembersItemsPerRow}
               />
             </div>
